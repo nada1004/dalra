@@ -17,14 +17,14 @@
 <canvas class="confetti-canvas" id="confetti-canvas"></canvas>
 
 <!-- 마스코트 응원 팝업 -->
-<div class="mascot-cheer" id="mascot-cheer">
-  <button class="mc-close" onclick="document.getElementById('mascot-cheer').classList.remove('on')">✕</button>
-  <span class="mc-emoji" id="mc-emoji">🦉</span>
+<div class="mascot-cheer" id="mascot-cheer" role="alert" aria-live="polite">
+  <button class="mc-close" onclick="document.getElementById('mascot-cheer').classList.remove('on')" aria-label="응원 메시지 닫기">✕</button>
+  <span class="mc-emoji" id="mc-emoji" role="img">🦉</span>
   <div class="mc-msg" id="mc-msg">잘하고 있어요!</div>
 </div>
 
 <!-- 콤보 칭찬 -->
-<div class="combo-praise" id="combo-praise"></div>
+<div class="combo-praise" id="combo-praise" role="alert" aria-live="polite"></div>
 
 <!-- 이름 입력 -->
 <div id="name-screen">
@@ -174,15 +174,15 @@
 
   <div class="pbar"><div class="pbar-fill" id="pgf"></div></div>
 
-  <div class="tabs">
-    <button class="tab on"  onclick="switchTab('home',this)">🏠 홈</button>
-    <button class="tab"     onclick="switchTab('school',this)">🏫 학급생활</button>
-    <button class="tab"     onclick="switchTab('study',this)">📖 공부하기</button>
-    <button class="tab"     id="tab-exam" onclick="switchTab('exam',this)">📝 시험·오답<span class="tab-badge" id="tab-badge-wrong" style="display:none"></span></button>
-    <button class="tab"     onclick="switchTab('game',this)">🎮 게임하기</button>
-    <button class="tab"     onclick="switchTab('media',this)">🎵 미디어</button>
-    <button class="tab"     onclick="switchTab('rankstats',this)">🏆 랭킹·통계</button>
-    <button class="tab"     onclick="switchTab('settings',this)">⚙️ 설정</button>
+  <div class="tabs" role="tablist">
+    <button class="tab on" role="tab" aria-selected="true" onclick="switchTab('home',this)">🏠 홈</button>
+    <button class="tab" role="tab" aria-selected="false" onclick="switchTab('school',this)">🏫 학급생활</button>
+    <button class="tab" role="tab" aria-selected="false" onclick="switchTab('study',this)">📖 공부하기</button>
+    <button class="tab" id="tab-exam" role="tab" aria-selected="false" onclick="switchTab('exam',this)">📝 시험·오답<span class="tab-badge" id="tab-badge-wrong" style="display:none"></span></button>
+    <button class="tab" role="tab" aria-selected="false" onclick="switchTab('game',this)">🎮 게임하기</button>
+    <button class="tab" role="tab" aria-selected="false" onclick="switchTab('media',this)">🎵 미디어</button>
+    <button class="tab" role="tab" aria-selected="false" onclick="switchTab('rankstats',this)">🏆 랭킹·통계</button>
+    <button class="tab" role="tab" aria-selected="false" onclick="switchTab('settings',this)">⚙️ 설정</button>
   </div>
 
   <div class="pw">

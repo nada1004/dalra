@@ -541,7 +541,7 @@ const LV_TABLE=[
 let ALL_QS=[...BANK_TRUE,...BANK_FALSE];
 
 /* ══ localStorage 안전 헬퍼 ══ */
-function lsSet(key,val){try{localStorage.setItem(key,typeof val==='string'?val:JSON.stringify(val));}catch(e){console.warn('lsSet fail:',key);}}
+function lsSet(key,val){try{localStorage.setItem(key,typeof val==='string'?val:JSON.stringify(val));}catch(e){}}
 function lsGet(key,def){try{return localStorage.getItem(key)??def;}catch(e){return def;}}
 function lsGetJSON(key,def){try{const v=localStorage.getItem(key);return v?JSON.parse(v):def;}catch(e){return def;}}
 
@@ -549,6 +549,11 @@ function lsGetJSON(key,def){try{const v=localStorage.getItem(key);return v?JSON.
 function esc(str){
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
+
+/* ══ 상수 정의 ══ */
+const MAX_RANKING = 10;
+const HOME_RANK_DISPLAY = 5;
+const MAX_COMBO_DISPLAY = 10;
 
 /* ══ 출석 스탬프 ══ */
 const ATT_KEY = 'cgSchoolAttendance';
@@ -724,8 +729,11 @@ function switchTab(name,btn){
 }
 function _doSwitchTab(name,btn){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('[role="tab"]').forEach(t=>t.setAttribute('aria-selected','false'));
   if(btn) btn.classList.add('on');
   else{const i=TABS.indexOf(name);if(i>=0)document.querySelectorAll('.tab')[i].classList.add('on');}
+  if(btn) btn.setAttribute('aria-selected','true');
+  else{const i=TABS.indexOf(name);if(i>=0)document.querySelectorAll('[role="tab"]')[i].setAttribute('aria-selected','true');}
   // 탭 이름 → 패널 ID 매핑
   const panelMap = {
     school:'panel-school', study:'panel-study',
@@ -1405,7 +1413,7 @@ function saveRank(){
   } else {
     r.push({n:S.playerName,s:S.score,d:new Date().toLocaleDateString('ko-KR')});
   }
-  r.sort((a,b)=>b.s-a.s);r.splice(10);
+  r.sort((a,b)=>b.s-a.s);r.splice(MAX_RANKING);
   lsSet(RANK_KEY, r);
 }
 function renderRank(){
@@ -1430,7 +1438,7 @@ function renderHomeRank(){
   const r=loadRank();
   const M=['🥇','🥈','🥉'];
   EL.homeRankList.innerHTML=r.length
-    ?r.slice(0,5).map((x,i)=>`<div class="hrp-item"><span class="hrp-no">${M[i]||i+1}</span><span class="hrp-name">${esc(x.n)}</span><span class="hrp-score">${esc(x.s)}점</span></div>`).join('')
+    ?r.slice(0,HOME_RANK_DISPLAY).map((x,i)=>`<div class="hrp-item"><span class="hrp-no">${M[i]||i+1}</span><span class="hrp-name">${esc(x.n)}</span><span class="hrp-score">${esc(x.s)}점</span></div>`).join('')
     :'<div class="hrp-empty">아직 기록이 없어요</div>';
 }
 
@@ -1626,7 +1634,7 @@ function openGame(id){
 }
 function closeGame(id){
   if(id==='tetris') closeTetris();
-  if(id==='minesweeper') clearInterval(MS&&MS.timerID);
+  if(id==='minesweeper'){clearInterval(MS&&MS.timerID);document.removeEventListener('keydown',msKey);}
   if(id==='mole') stopMole&&stopMole();
   if(id==='snake'){clearInterval(SNAKE&&SNAKE.timerID);document.removeEventListener('keydown',snakeKey);}
   if(id==='ladder'&&_spellTimer){clearInterval(_spellTimer);}
@@ -2523,8 +2531,10 @@ function soopAddId(id){
 
 /* ─── 미디어 패널 전환 ─── */
 function switchMedia(name,btn){
-  document.querySelectorAll('.mtab').forEach(b=>b.classList.remove('on'));
-  document.querySelectorAll('.mpanel').forEach(p=>p.classList.remove('on'));
+  const mtabs=document.querySelectorAll('.mtab');
+  const mpanels=document.querySelectorAll('.mpanel');
+  mtabs.forEach(b=>b.classList.remove('on'));
+  mpanels.forEach(p=>p.classList.remove('on'));
   if(btn) btn.classList.add('on');
   const panel=document.getElementById('mpanel-'+name);
   if(panel) panel.classList.add('on');
