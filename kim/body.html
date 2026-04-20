@@ -1,0 +1,1529 @@
+</head>
+<body>
+
+<!-- 콤보 FEVER 오버레이 -->
+<div class="fever-overlay" id="fever-overlay" style="display:none;">
+  <div class="fever-text" id="fever-text">🔥 FEVER!</div>
+</div>
+<canvas class="confetti-canvas" id="confetti-canvas"></canvas>
+
+<!-- 마스코트 응원 팝업 -->
+<div class="mascot-cheer" id="mascot-cheer">
+  <button class="mc-close" onclick="document.getElementById('mascot-cheer').classList.remove('on')">✕</button>
+  <span class="mc-emoji" id="mc-emoji">🦉</span>
+  <div class="mc-msg" id="mc-msg">잘하고 있어요!</div>
+</div>
+
+<!-- 콤보 칭찬 -->
+<div class="combo-praise" id="combo-praise"></div>
+
+<!-- 이름 입력 -->
+<div id="name-screen">
+  <div class="ns-wrap">
+    <div class="ns-emoji">🏫</div>
+    <div class="ns-title"><em>달라</em> 초등학교</div>
+    <div class="ns-tag">✨ 교장 : 쫄병</div>
+    <!-- 귀여운 마스코트 캐릭터 줄 -->
+    <div class="ns-mascot-row">
+      <span class="ns-char">🦉</span>
+      <span class="ns-char">🐰</span>
+      <span class="ns-char">🐻</span>
+      <span class="ns-char">🦁</span>
+    </div>
+    <div class="ns-card">
+      <div class="ns-label">👋 이름을 입력하고 입학하세요!</div>
+      <input class="ns-inp" id="name-input" type="text" maxlength="10"
+        placeholder="학생 이름을 입력하세요" autocomplete="off"
+        oninput="document.getElementById('ns-start').disabled=!this.value.trim()"
+        onkeydown="if(event.key==='Enter'&&this.value.trim())startGame()"/>
+      <button class="ns-btn" id="ns-start" disabled onclick="startGame()">🎒 입학하기</button>
+      <button class="ns-admin-btn" onclick="adminLogin()">🔐 관리자</button>
+    </div>
+  </div>
+</div>
+
+<!-- 관리자 패널 오버레이 -->
+<!-- 관리자 로그인 모달 -->
+<div id="admin-login-modal">
+  <div class="alm-box">
+    <div class="alm-head">
+      <div class="alm-head-title">🔐 관리자 로그인</div>
+      <button class="alm-close" onclick="adminLoginModalClose()">✕</button>
+    </div>
+    <div class="alm-body">
+      <div class="alm-field">
+        <div class="alm-label">관리자 ID</div>
+        <input class="alm-input" id="alm-id" type="text" placeholder="관리자 아이디 입력" autocomplete="off"/>
+      </div>
+      <div class="alm-field">
+        <div class="alm-label">비밀번호</div>
+        <input class="alm-input" id="alm-pw" type="password" placeholder="비밀번호 입력"
+          onkeydown="if(event.key==='Enter')adminLoginSubmit()"/>
+      </div>
+      <div class="alm-err" id="alm-err"></div>
+      <button class="alm-submit" onclick="adminLoginSubmit()">🔓 로그인</button>
+      <div class="alm-hint">기본 계정 · ID: admin99 / PW: 99admin</div>
+    </div>
+  </div>
+</div>
+
+<div id="admin-overlay" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);align-items:center;justify-content:center;">
+  <div class="admin-panel">
+    <div class="admin-header">
+      <span>🔐 관리자 모드</span>
+      <button class="admin-close" onclick="adminClose()">✕</button>
+    </div>
+    <div class="admin-body">
+      <div class="admin-section">
+        <div class="admin-sec-title">📊 현재 통계</div>
+        <div class="admin-stats" id="admin-stats"></div>
+      </div>
+      <div class="admin-section">
+        <div class="admin-sec-title">➕ 문제 직접 추가</div>
+        <textarea class="admin-inp" id="admin-q-text-ov" placeholder="문제 내용" rows="2"></textarea>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <select class="admin-sel" id="admin-q-ans-ov">
+            <option value="true">⭕ O (맞다)</option>
+            <option value="false">❌ X (틀리다)</option>
+          </select>
+          <input class="admin-inp" id="admin-q-cat-ov" type="text" placeholder="카테고리 (예: 🔬과학)" style="flex:1"/>
+        </div>
+        <button class="admin-btn green" onclick="adminAddQOverlay()">➕ 문제 뱅크에 추가</button>
+      </div>
+      <div class="admin-section">
+        <div class="admin-sec-title">🗑 데이터 관리</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="admin-btn red" onclick="adminResetRank()">🏆 랭킹 초기화</button>
+          <button class="admin-btn red" onclick="adminResetStats()">📊 통계 초기화</button>
+          <button class="admin-btn red" onclick="adminResetWrong()">📕 오답노트 초기화</button>
+          <button class="admin-btn red" onclick="adminResetAll()">⚠️ 전체 초기화</button>
+        </div>
+      </div>
+      <div class="admin-section">
+        <div class="admin-sec-title">📋 사용자 추가 문제 목록 (<span id="admin-cq-cnt">0</span>개)</div>
+        <div class="admin-cq-list" id="admin-cq-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 앱 -->
+<div id="app">
+  <div class="hd">
+    <div class="hd-left">
+      <span class="hd-logo">🏫</span>
+      <div class="hd-nw"><div class="hd-title">달라 초등학교</div><div class="hd-sub">교장 : 쫄병</div></div>
+    </div>
+    <div class="hd-center" id="hd-center" style="display:none;">
+      <div class="hpill">❤️ <span class="v" id="hd-lives">3</span></div>
+      <div class="hpill">🔥 <span class="v" id="hd-combo">0</span> COMBO</div>
+      <div class="hpill">⭐ <span class="v" id="hd-score">0점</span></div>
+    </div>
+    <div class="hd-right">
+      <div class="timer-ring" id="timer-ring" style="display:none;">
+        <svg viewBox="0 0 36 36">
+          <circle id="timer-bg" cx="18" cy="18" r="15.9"/>
+          <circle id="timer-fg" cx="18" cy="18" r="15.9"/>
+        </svg>
+        <div class="tval" id="tval">15</div>
+      </div>
+      <button class="snd-btn" id="snd-toggle" onclick="toggleSound()">🔊</button>
+      <button class="snd-btn" id="dark-toggle" onclick="toggleDark()" title="다크모드">🌙</button>
+      <button class="hd-btn r" id="hd-restart-btn" style="display:none;" onclick="restartQuiz()">🔄 재시작</button>
+      <button class="hd-btn h" onclick="goHome()">🏠 처음으로</button>
+    </div>
+  </div>
+
+  <div class="sbar" id="sbar">
+    <!-- 왼쪽: 아바타 + 이름 -->
+    <div class="sbar-left">
+      <div class="sbar-avatar" id="sbar-avatar">🐰</div>
+      <div class="sbar-name-wrap">
+        <div class="sbar-name" id="disp-name">학생</div>
+        <div class="sbar-hello">안녕하세요! 👋</div>
+      </div>
+    </div>
+    <!-- 가운데: 레벨 + XP 바 -->
+    <div class="sbar-center">
+      <div class="sbar-lv-row">
+        <div class="sbar-lv-badge" id="lv-badge">⭐ Lv.1 초보</div>
+        <div class="sbar-lv-next" id="sbar-lv-next">다음 레벨까지 500점</div>
+      </div>
+      <div class="sbar-xp-bar">
+        <div class="sbar-xp-fill" id="sbar-xp-fill"></div>
+      </div>
+    </div>
+    <!-- 오른쪽: 점수 + 하트 -->
+    <div class="sbar-right">
+      <div class="sbar-score-wrap">
+        <div class="sbar-score-label">✨ 점수</div>
+        <div class="sbar-score-val" id="gscore">0점</div>
+      </div>
+      <div class="sbar-hearts" id="sbar-hearts">❤️❤️❤️</div>
+    </div>
+  </div>
+
+  <div class="pbar"><div class="pbar-fill" id="pgf"></div></div>
+
+  <div class="tabs">
+    <button class="tab on"  onclick="switchTab('home',this)">🏠 홈</button>
+    <button class="tab"     onclick="switchTab('school',this)">🏫 학급생활</button>
+    <button class="tab"     onclick="switchTab('study',this)">📖 공부하기</button>
+    <button class="tab"     id="tab-exam" onclick="switchTab('exam',this)">📝 시험·오답<span class="tab-badge" id="tab-badge-wrong" style="display:none"></span></button>
+    <button class="tab"     onclick="switchTab('game',this)">🎮 게임하기</button>
+    <button class="tab"     onclick="switchTab('media',this)">🎵 미디어</button>
+    <button class="tab"     onclick="switchTab('rankstats',this)">🏆 랭킹·통계</button>
+    <button class="tab"     onclick="switchTab('settings',this)">⚙️ 설정</button>
+  </div>
+
+  <div class="pw">
+
+    <!-- 홈 -->
+    <div class="panel on" id="panel-home">
+      <div class="home-inner">
+        <!-- 환영 배너 (시간대별) -->
+        <div class="welcome-time-banner" id="welcome-banner">
+          <div class="wtb-emoji" id="wtb-emoji">🌞</div>
+          <div class="wtb-body">
+            <div class="wtb-greeting" id="wtb-greeting">좋은 아침이에요, <span id="home-name">학생</span>님!</div>
+            <div class="wtb-sub" id="wtb-sub">오늘도 멋지게 공부해봐요 💪</div>
+          </div>
+        </div>
+        <!-- 오늘의 한마디 -->
+        <div class="daily-word-card">
+          <div class="dw-mascot" id="dw-mascot">🦉</div>
+          <div class="dw-body">
+            <div class="dw-label">📣 오늘의 한마디</div>
+            <div class="dw-text" id="dw-text">지금 시작하는 게 가장 빠른 방법이에요!</div>
+            <div class="dw-sub" id="dw-sub">— 부엉이 선생님 🦉</div>
+          </div>
+        </div>
+        <div class="home-cards">
+          <div class="home-card study" onclick="switchTab('study',null)">
+            <div class="hc-icon">📖</div>
+            <div class="hc-title">공부하기</div>
+            <div class="hc-desc">문제와 정답을 미리 보며<br>차근차근 공부해요</div>
+            <button class="hc-btn">📖 공부 시작!</button>
+          </div>
+          <div class="home-card exam" onclick="switchTab('exam',null)">
+            <div class="hc-icon">📝</div>
+            <div class="hc-title">시험 보기</div>
+            <div class="hc-desc">실력을 확인할 시간!<br>시험 보러 가자!! 🔥</div>
+            <button class="hc-btn">📝 시험 보러 가기!</button>
+          </div>
+          <div class="home-card game" onclick="switchTab('game',null)">
+            <div class="hc-icon">🎮</div>
+            <div class="hc-title">게임하기</div>
+            <div class="hc-desc">재미있는 게임으로<br>즐겁게 배워요</div>
+            <button class="hc-btn">🎮 게임 하러 가기!</button>
+          </div>
+        </div>
+        <!-- 오늘의 퀴즈 배너 -->
+        <div class="today-quiz-banner" id="today-quiz-banner">
+          <div class="tqb-left">
+            <div class="tqb-icon">🌟</div>
+            <div class="tqb-text">
+              <strong>오늘의 퀴즈 도전!</strong>
+              <span id="tqb-desc">매일 새로운 5문제에 도전해봐요</span>
+            </div>
+          </div>
+          <button class="tqb-btn" id="tqb-btn" onclick="startTodayQuiz()">도전하기 →</button>
+        </div>
+        <!-- 오늘의 학습 요약 (최근 기록) -->
+        <div class="today-stats-card" id="today-stats-card">
+          <div class="tsc-title">📊 내 학습 현황</div>
+          <div class="tsc-grid">
+            <div class="tsc-item">
+              <div class="tsc-val" id="tsc-solved">0</div>
+              <div class="tsc-lbl">오늘 푼 문제</div>
+            </div>
+            <div class="tsc-item">
+              <div class="tsc-val" id="tsc-correct">0%</div>
+              <div class="tsc-lbl">정답률</div>
+            </div>
+            <div class="tsc-item">
+              <div class="tsc-val" id="tsc-combo">0</div>
+              <div class="tsc-lbl">최고 콤보</div>
+            </div>
+            <div class="tsc-item">
+              <div class="tsc-val" id="tsc-wrong">0</div>
+              <div class="tsc-lbl">오답 누적</div>
+            </div>
+          </div>
+        </div>
+        <!-- 데일리 미션 -->
+        <div class="daily-mission-card">
+          <div class="dm-title">🎯 오늘의 미션 <span id="dm-progress-text" style="font-size:12px;color:#f06878;font-weight:700;"></span></div>
+          <div class="dm-list" id="dm-list"></div>
+        </div>
+        <div class="home-rank-preview">
+          <div class="hrp-title">🏆 명예의 전당 TOP 5</div>
+          <div id="home-rank-list"><div class="hrp-empty">아직 기록이 없어요</div></div>
+        </div>
+        <!-- 출석 스탬프 -->
+        <div class="attendance-card" id="attendance-card">
+          <div class="att-title">📅 이번 주 출석 스탬프</div>
+          <div class="att-days" id="att-days"></div>
+          <div class="att-msg" id="att-msg">오늘도 공부하러 왔어요! ⭐</div>
+        </div>
+        <!-- 칭찬 스티커 -->
+        <div class="sticker-card">
+          <div class="sticker-title">⭐ 칭찬 스티커 모음</div>
+          <div class="sticker-grid" id="sticker-grid"></div>
+          <div class="sticker-how">시험 10점마다 스티커 1장! 오답 0개 달성 시 특별 스티커 🌟</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 📋 가정통신문 -->
+    <!-- 🏫 학급생활 (가정통신문 + 시간표 통합) -->
+    <div class="panel" id="panel-school">
+      <div class="school-panel-wrap">
+        <!-- 서브탭 -->
+        <div class="school-subtabs">
+          <button class="school-stab on" id="stab-notice" onclick="schoolSubTab('notice',this)">📋 가정통신문</button>
+          <button class="school-stab" id="stab-timetable" onclick="schoolSubTab('timetable',this)">📅 시간표</button>
+          <button class="school-stab" id="stab-students" onclick="schoolSubTab('students',this)">👨‍🎓 학생정보</button>
+
+        </div>
+        <!-- 가정통신문 섹션 -->
+        <div class="school-sub-panel" id="school-sub-notice">
+          <div class="notice-panel-wrap">
+            <div class="np-header" id="np-header-row">
+              <div>
+                <div class="np-title">📋 가정통신문</div>
+                <div class="np-subtitle">학교 알림장 · 공지사항</div>
+              </div>
+              <button class="np-add-btn" onclick="noticeFormOpen()">✏️ 새 통신문 작성</button>
+            </div>
+            <!-- 게시판 목록 -->
+            <div id="np-list-view">
+              <div class="np-board-head">
+                <span>번호</span>
+                <span>제목</span>
+                <span>작성자</span>
+                <span>날짜</span>
+              </div>
+              <div class="np-board-body" id="np-grid"></div>
+            </div>
+            <!-- 인라인 상세 보기 -->
+            <div id="np-detail-view" style="display:none;">
+              <div class="np-detail-back">
+                <button class="np-back-btn" onclick="noticeBackToList()">← 목록으로</button>
+                <button class="np-del-btn2" onclick="noticeDeleteInline()">🗑 삭제</button>
+              </div>
+              <div class="np-detail-doc">
+                <div class="npd-doc-header">
+                  <div class="npd-logo">🏫</div>
+                  <div>
+                    <div class="npd-school">달라 초등학교</div>
+                    <div class="npd-subtitle">가 정 통 신 문</div>
+                  </div>
+                </div>
+                <div class="npd-meta">
+                  <span>수신: 학부모님</span>
+                  <span id="npd-date">2024. 01. 01.</span>
+                </div>
+                <div class="npd-title-box">
+                  <div class="npd-label">제 목</div>
+                  <div class="npd-title" id="npd-title">제목</div>
+                </div>
+                <div class="npd-greeting">
+                  안녕하십니까? 항상 저희 학교에 보내주시는 관심과 성원에 감사드립니다.<br>
+                  아래와 같이 안내드리오니, 가정에서 적극 협조해 주시기 바랍니다.
+                </div>
+                <div class="npd-content" id="npd-content"></div>
+                <div class="npd-footer">
+                  <span>발신: <span id="npd-from">담임교사</span></span>
+                  <span>달라 초등학교장 (인)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- 시간표 섹션 -->
+        <div class="school-sub-panel" id="school-sub-timetable" style="display:none;">
+          <div class="tt-wrap">
+            <div class="tt-header-bar">
+              <div>
+                <div class="tt-main-title">📅 나의 시간표</div>
+                <div class="tt-main-sub">수업 시간표를 등록하고 오늘 수업을 확인해요!</div>
+              </div>
+              <div style="display:flex;gap:8px;">
+                <button class="tt-btn" id="tt-edit-btn" onclick="ttToggleEdit()">✏️ 편집</button>
+                <button class="tt-btn tt-btn-save" id="tt-save-btn" style="display:none;" onclick="ttSave()">💾 저장</button>
+              </div>
+            </div>
+            <div class="tt-today-banner" id="tt-today-banner"></div>
+            <div class="tt-table-scroll">
+              <div class="tt-table-scroll"><table class="tt-table" id="tt-table"></table></div>
+            </div>
+          </div>
+        </div>
+        <div class="school-sub-panel" id="school-sub-students" style="display:none;">
+          <div class="stu-wrap">
+            <div class="stu-toolbar">
+              <div class="stu-toolbar-title">👨‍🎓 우리 반 학생</div>
+              <button class="stu-add-btn" id="stu-add-btn" style="display:none;" onclick="stuOpenModal()">+ 학생 등록</button>
+            </div>
+            <div class="stu-grid" id="stu-grid"></div>
+            <div class="stu-empty" id="stu-empty" style="display:none;">
+              아직 등록된 학생이 없어요! 😊<br>
+              <span style="font-size:12px;color:#d0a0b0;margin-top:6px;display:block;">관리자가 학생을 등록할 수 있어요.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 공부하기 -->
+
+    <div class="panel" id="panel-study">
+    <div class="study-header">
+        <div class="study-title">📖 공부하기</div>
+        <div class="study-prog" id="study-prog">1 / 454</div>
+      </div>
+      <!-- 모드 토글 -->
+      <div class="study-mode-toggle" style="width:100%;max-width:100%;">
+        <button class="smt-btn on" id="mode-normal" onclick="setStudyMode('normal')">📖 일반 모드</button>
+        <button class="smt-btn" id="mode-flash" onclick="setStudyMode('flash')">🃏 플래시카드</button>
+      </div>
+      <div class="study-filter" id="study-filter"></div>
+
+      <!-- 일반 모드 -->
+      <div id="study-normal-view" style="width:100%;max-width:100%;display:flex;flex-direction:column;gap:clamp(10px,1.8vh,16px);">
+        <div class="study-board">
+          <span class="sb-label" id="sb-cat">📚 상식</span>
+          <div class="sb-question" id="sb-question">문제를 선택하세요</div>
+          <div class="sb-answer">
+            <div class="sb-ans-badge t" id="sb-badge">O</div>
+            <div class="sb-ans-text" id="sb-ans-text">정답: O (맞다)</div>
+          </div>
+          <div class="sb-add-row">
+            <button class="sb-add-btn" id="sb-add-btn" onclick="addCurrentToCustom()">➕ 내 문제로 추가</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 플래시카드 모드 -->
+      <div id="study-flash-view" style="width:100%;max-width:100%;display:none;flex-direction:column;gap:clamp(10px,1.8vh,16px);">
+        <div class="flashcard-wrap" onclick="flipCard()">
+          <div class="flashcard" id="flashcard">
+            <div class="fc-front">
+              <span class="fc-cat" id="fc-cat">📚 상식</span>
+              <div class="fc-question" id="fc-question">문제를 불러오는 중...</div>
+              <div class="fc-hint">👆 클릭해서 정답 확인!</div>
+            </div>
+            <div class="fc-back">
+              <div class="fc-ans-big o" id="fc-ans-big">O</div>
+              <div class="fc-ans-label" id="fc-ans-label">맞다 (O)</div>
+              <div class="fc-hint" style="color:rgba(255,255,255,.45);">다음 카드 → 화살표 또는 버튼</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 공통 네비게이션 -->
+      <div class="study-nav" style="width:100%;max-width:100%;">
+        <button class="snav-btn prev" id="study-prev" onclick="studyNav(-1)">◀ 이전</button>
+        <span class="snav-cnt" id="study-cnt">1 / 454</span>
+        <button class="snav-btn next" id="study-next" onclick="studyNav(1)">다음 ▶</button>
+      </div>
+      <div class="study-exam-banner">
+        <div class="seb-text">
+          <strong>📝 이제 시험 볼 준비 됐나요?</strong>
+          <span>시험 보러 가자!! 지금 바로 도전! 🔥</span>
+        </div>
+        <button class="seb-btn" onclick="switchTab('exam',null)">시험 보러 가기 →</button>
+      </div>
+    </div>
+
+    <!-- 가정통신문 모달 -->
+    <div class="notice-modal-bg" id="notice-modal-bg">
+      <div class="notice-modal">
+        <button class="nm-close" onclick="noticeModalClose()">✕</button>
+        <!-- 학교 헤더 -->
+        <div class="nm-doc-header">
+          <div class="nm-doc-logo">🏫</div>
+          <div class="nm-doc-school-wrap">
+            <div class="nm-doc-school" id="nm-school-name">달라 초등학교</div>
+            <div class="nm-doc-subtitle">가 정 통 신 문</div>
+          </div>
+        </div>
+        <!-- 문서 번호/날짜 -->
+        <div class="nm-doc-meta">
+          <span>수신: 학부모님</span>
+          <span id="nm-date">2024. 01. 01.</span>
+        </div>
+        <!-- 제목 -->
+        <div class="nm-doc-title-box">
+          <div class="nm-doc-title-label">제 목</div>
+          <div class="nm-title" id="nm-title">가정통신문 제목</div>
+        </div>
+        <!-- 인사말 -->
+        <div class="nm-doc-greeting">
+          안녕하십니까? 항상 저희 학교에 보내주시는 관심과 성원에 감사드립니다.<br>
+          아래와 같이 안내드리오니, 가정에서 적극 협조해 주시기 바랍니다.
+        </div>
+        <!-- 본문 -->
+        <div class="nm-body">
+          <div class="nm-content" id="nm-content"></div>
+        </div>
+        <!-- 발신 -->
+        <div class="nm-doc-footer-box">
+          <div class="nm-doc-sender">발신: <span id="nm-from">담임교사</span></div>
+          <div class="nm-doc-sign">달라 초등학교장 (인)</div>
+        </div>
+        <!-- 버튼 -->
+        <div class="nm-footer">
+          <button class="nm-del-btn" onclick="noticeDelete()">🗑 삭제</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 가정통신문 작성 폼 -->
+    <div class="notice-form-bg" id="notice-form-bg">
+      <div class="notice-form">
+        <div class="nf-header">
+          <span>📋 가정통신문 작성</span>
+          <button class="nm-close" onclick="noticeFormClose()">✕</button>
+        </div>
+        <div class="nf-body">
+          <div>
+            <div class="nf-label">제목 *</div>
+            <input class="nf-inp" id="nf-title" type="text" placeholder="예: 4월 현장학습 안내"/>
+          </div>
+          <div>
+            <div class="nf-label">발신자 (선택)</div>
+            <input class="nf-inp" id="nf-from" type="text" placeholder="예: 담임 최선생님"/>
+          </div>
+          <div>
+            <div class="nf-label">내용 *</div>
+            <textarea class="nf-ta" id="nf-content" placeholder="가정통신문 내용을 입력하세요..."></textarea>
+          </div>
+          <div>
+            <div class="nf-label">📷 이미지 첨부 (선택)</div>
+            <label class="nf-img-label">
+              🖼 이미지 선택
+              <input type="file" id="nf-img-input" accept="image/*" style="display:none" onchange="nfPreviewImg(this)"/>
+            </label>
+            <div id="nf-img-preview" style="margin-top:8px;display:none;">
+              <img id="nf-img-prev-el" style="max-width:100%;max-height:180px;border-radius:10px;border:2px solid #e8d5f5;"/>
+              <button onclick="nfClearImg()" style="display:block;margin-top:4px;padding:4px 12px;font-size:12px;font-family:'Jua',sans-serif;background:#fce7f3;border:1px solid #fbcfe8;border-radius:8px;cursor:pointer;color:#be185d;">✕ 이미지 제거</button>
+            </div>
+          </div>
+        </div>
+        <div class="nf-footer">
+          <button class="nf-cancel" onclick="noticeFormClose()">취소</button>
+          <button class="nf-submit" onclick="noticeSave()">💾 저장</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 시험 (퀴즈) -->
+    <!-- 📝 시험·오답 통합 패널 -->
+    <div class="panel" id="panel-exam-quiz">
+      <!-- 서브탭 -->
+      <div class="exam-subtabs">
+        <button class="exam-stab on" id="etab-quiz" onclick="examSubTab('quiz',this)">📝 시험 보기</button>
+        <button class="exam-stab" id="etab-wrong" onclick="examSubTab('wrong',this)">📕 오답 노트</button>
+      </div>
+      <!-- 시험 섹션 -->
+      <div class="exam-sub-panel" id="exam-sub-quiz">
+      <!-- ① 시험 설정 화면 -->
+      <div class="quiz-ready" id="quiz-ready" style="align-items:center;text-align:center;max-width:100%;width:100%;">
+        <div class="quiz-setup" style="width:100%;max-width:100%;">
+          <div class="qr-icon" style="align-self:center;">📝</div>
+          <div class="qs-title">시험 설정</div>
+          <div class="qs-subtitle">카테고리, 문제 수, 시간을 골라봐요!</div>
+
+          <!-- 카테고리 -->
+          <div class="qs-section">
+            <div class="qs-sec-title">📂 카테고리 선택</div>
+            <div class="qs-cats" id="qs-cats">
+              <!-- JS로 렌더링 -->
+            </div>
+          </div>
+
+          <!-- 문제 수 -->
+          <div class="qs-section">
+            <div class="qs-sec-title">📝 문제 수</div>
+            <div class="qs-pills" id="qs-cnt-pills">
+              <button class="qs-pill" onclick="setQCount(10,this)">10개</button>
+              <button class="qs-pill on" onclick="setQCount(20,this)">20개</button>
+              <button class="qs-pill" onclick="setQCount(30,this)">30개</button>
+              <button class="qs-pill" onclick="setQCount(9999,this)">전체</button>
+            </div>
+          </div>
+
+          <!-- 시간 -->
+          <div class="qs-section">
+            <div class="qs-sec-title">⏱ 문제당 제한 시간</div>
+            <div class="qs-pills" id="qs-time-pills">
+              <button class="qs-pill" onclick="setQTime(10,this)">10초</button>
+              <button class="qs-pill on" onclick="setQTime(15,this)">15초</button>
+              <button class="qs-pill" onclick="setQTime(20,this)">20초</button>
+              <button class="qs-pill" onclick="setQTime(0,this)">무제한</button>
+            </div>
+          </div>
+
+          <div id="qs-preview" style="text-align:center;font-size:clamp(13px,1.8vw,16px);color:var(--blue);font-weight:700;padding:10px 0 4px;letter-spacing:.02em;">📋 총 20문제 출제 예정</div>
+          <div class="qs-start-row">
+            <button class="qs-start-btn" onclick="startQuiz()">🚀 시험 시작!</button>
+            <button class="qs-wrong-btn" id="qs-wrong-btn" onclick="startWrongQuiz()">📕 오답만 풀기</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="quiz-playing" id="quiz-playing">
+        <!-- 응원 메시지 바 -->
+        <div class="quiz-cheer-bar" id="quiz-cheer-bar"></div>
+        <!-- 칠판: 문제 중앙 정렬 -->
+        <div class="board" id="board">
+          <div class="b-top">
+            <span class="blbl" id="blbl">📚 상식</span>
+            <span class="qnum" id="qnum">1 / 400</span>
+          </div>
+          <div class="qtxt" id="qtxt">문제를 불러오는 중이에요 🎒</div>
+          <div class="board-chalk">
+            <span style="width:32px;height:8px;background:#fffde7;opacity:.6;"></span>
+            <span style="width:20px;height:8px;background:#f8a8b0;opacity:.5;"></span>
+            <span style="width:24px;height:8px;background:#93c5fd;opacity:.5;"></span>
+          </div>
+        </div>
+
+        <div class="fb" id="fb"></div>
+        <div class="gom" id="gom">💔 목숨을 모두 잃었어요!</div>
+
+        <div class="meta-row">
+          <div class="lives" id="lives">❤️❤️❤️</div>
+          <div class="combo" id="combo">🔥 COMBO</div>
+        </div>
+
+        <div class="scards">
+          <div class="sc c"><div class="sc-lbl">✅ 정답</div><div class="sc-val" id="sc">0</div></div>
+          <div class="sc w"><div class="sc-lbl">❌ 오답</div><div class="sc-val" id="sw">0</div></div>
+          <div class="sc m"><div class="sc-lbl">🔥 최고콤보</div><div class="sc-val" id="smx">0</div></div>
+          <div class="sc"><div class="sc-lbl">⚡ 현재콤보</div><div class="sc-val" id="scur">0</div></div>
+        </div>
+
+        <div class="prog-row"><span id="piv">1/400</span><span id="ppct">0%</span></div>
+
+        <!-- OX 카드 (책상 대체) -->
+        <div class="ox-card-area">
+          <button class="ox-card oo-card" id="bo" onclick="ans(true)">
+            <div class="ox-card-icon">O</div>
+            <div class="ox-card-label">맞아요!</div>
+            <div class="ox-card-sublabel">이 문장은 사실이에요</div>
+            <div class="ox-card-key">Z / ←</div>
+          </button>
+          <button class="ox-card xx-card" id="bx" onclick="ans(false)">
+            <div class="ox-card-icon">X</div>
+            <div class="ox-card-label">틀려요!</div>
+            <div class="ox-card-sublabel">이 문장은 거짓이에요</div>
+            <div class="ox-card-key">/ / →</div>
+          </button>
+        </div>
+      </div>
+      </div><!-- end exam-sub-quiz -->
+      <!-- 오답노트 섹션 -->
+      <div class="exam-sub-panel" id="exam-sub-wrong" style="display:none;width:100%;">
+        <!-- 오답노트 내용 (panel-exam-wrong에서 이동) -->
+        <div class="wn-header">
+          <div class="wn-title">📕 오답 노트</div>
+          <span class="wn-count" id="wn-count">0개</span>
+        </div>
+        <div class="wn-actions">
+          <button class="wn-retry-btn" id="wn-retry-btn" onclick="startWrongQuiz()" disabled>🔄 오답만 다시 풀기</button>
+          <button class="wn-clear-btn" onclick="clearWrongNote()">🗑 전체 삭제</button>
+        </div>
+        <div id="wn-list2"><div class="wn-empty">아직 오답이 없어요 🎉<br>시험을 보면 틀린 문제가 여기에 쌓여요!</div></div>
+      </div>
+    </div>
+
+    <!-- 게임 허브 -->
+    <div class="panel" id="panel-game">
+      <div class="game-hub">
+        <div class="game-hub-title">🎮 게임하기</div>
+        <div class="game-cards">
+          <div class="game-card tetris" onclick="openTetris()">
+            <div class="gc-tip">⬅➡ 이동 / ⬆ 회전 / ⬇ 빠르게<br>줄 채우면 사라져요!</div>
+            <div class="gc-icon">🧱</div>
+            <div class="gc-title">테트리스</div>
+            <div class="gc-desc">클래식 테트리스!<br>블록을 쌓고 줄을 없애요!</div>
+            <button class="gc-btn">🧱 시작하기</button>
+          </div>
+          <div class="game-card minesweeper" onclick="openMinesweeper()">
+            <div class="gc-tip">🖱 클릭=열기 / 우클릭=깃발<br>💣 밟으면 아웃!</div>
+            <div class="gc-icon">💣</div>
+            <div class="gc-title">지뢰찾기</div>
+            <div class="gc-desc">지뢰를 피해 모든 칸을<br>열어봐요! 우클릭=깃발 🚩</div>
+            <button class="gc-btn">💣 시작하기</button>
+          </div>
+          <div class="game-card mole" onclick="openMole()">
+            <div class="gc-tip">🔨 두더지 클릭하면 점수!<br>30초 안에 최대한 잡자!</div>
+            <div class="gc-icon">🐹</div>
+            <div class="gc-title">두더지 잡기</div>
+            <div class="gc-desc">30초 안에 두더지를<br>최대한 많이 잡아요!</div>
+            <button class="gc-btn">🔨 시작하기</button>
+          </div>
+          <div class="game-card snake" onclick="openSnake()">
+            <div class="gc-tip">⬅➡⬆⬇ 방향키·터치로 조작<br>먹이 먹으면 빨라져요!</div>
+            <div class="gc-icon">🐍</div>
+            <div class="gc-title">스네이크</div>
+            <div class="gc-desc">뱀을 조종해 먹이를 먹고<br>최대한 길게 키워봐요!</div>
+            <button class="gc-btn">🐍 시작하기</button>
+          </div>
+          <div class="game-card breakout" onclick="openBreakout()">
+            <div class="gc-tip">마우스·터치로 패들 이동<br>벽돌 다 깨면 다음 레벨!</div>
+            <div class="gc-icon">🏓</div>
+            <div class="gc-title">벽돌깨기</div>
+            <div class="gc-desc">공을 튕겨 모든 벽돌을<br>깨부수세요!</div>
+            <button class="gc-btn">🏓 시작하기</button>
+          </div>
+          <div class="game-card typing" onclick="openTyping()">
+            <div class="gc-tip">⌨️ 떨어지는 단어를 타이핑!<br>맞히면 점수!</div>
+            <div class="gc-icon">⌨️</div>
+            <div class="gc-title">타자연습</div>
+            <div class="gc-desc">떨어지는 단어를<br>빠르게 타이핑해요!</div>
+            <button class="gc-btn">⌨️ 시작하기</button>
+          </div>
+          <div class="game-card pacman" onclick="openPacman()">
+            <div class="gc-tip">⬅➡⬆⬇ 방향키로 이동<br>유령 피해 점들을 먹어요!</div>
+            <div class="gc-icon">🟡</div>
+            <div class="gc-title">팩맨</div>
+            <div class="gc-desc">미로를 누비며 점을 먹고<br>유령을 피해요!</div>
+            <button class="gc-btn">🟡 시작하기</button>
+          </div>
+          <div class="game-card stack" onclick="openStack()">
+            <div class="gc-tip">🖱 클릭·스페이스로 쌓기<br>정확히 맞출수록 넓게 쌓여요!</div>
+            <div class="gc-icon">🏗</div>
+            <div class="gc-title">블록 쌓기</div>
+            <div class="gc-desc">흔들리는 블록을 클릭해<br>최대한 높이 쌓아요!</div>
+            <button class="gc-btn">🏗 시작하기</button>
+          </div>
+          <div class="game-card dino" onclick="openDino()">
+            <div class="gc-tip">스페이스·클릭·터치로 점프<br>장애물을 피해요!</div>
+            <div class="gc-icon">🦕</div>
+            <div class="gc-title">공룡 달리기</div>
+            <div class="gc-desc">점프해서 선인장과 장애물을<br>피해 멀리 달려요!</div>
+            <button class="gc-btn">🦕 시작하기</button>
+          </div>
+          <div class="game-card dodge" onclick="openDodge()">
+            <div class="gc-tip">⬅➡ 방향키·터치로 이동<br>떨어지는 별 피하기!</div>
+            <div class="gc-icon">🚀</div>
+            <div class="gc-title">우주 피하기</div>
+            <div class="gc-desc">우주선을 조종해<br>떨어지는 운석을 피해요!</div>
+            <button class="gc-btn">🚀 시작하기</button>
+          </div>
+          <div class="game-card simon" onclick="openSimon()">
+            <div class="gc-tip">🟥🟩🟦🟨 순서 기억!</div>
+            <div class="gc-icon">🎨</div>
+            <div class="gc-title">사이먼 게임</div>
+            <div class="gc-desc">색깔 순서를 기억해서<br>따라 누르세요!</div>
+            <button class="gc-btn">🎨 시작하기</button>
+          </div>
+          
+          
+          
+        </div>
+      </div>
+    </div>
+
+    <!-- 🏆 랭킹 & 통계 통합 패널 -->
+    <div class="panel" id="panel-rankstats">
+      <div class="rs-outer">
+        <div class="rs-col">
+          <div class="rs-sec-title">🏆 명예의 전당 TOP 10</div>
+          <div id="rank-list-wrap" class="rs-rank-list"></div>
+          <button class="reset-btn" onclick="resetStats()">🗑 기록 초기화</button>
+          <div style="margin-top:12px;border-top:1px solid var(--border);padding-top:12px;">
+            <div class="rs-sec-title" style="margin-bottom:8px;">📋 시험 성적표 이력</div>
+            <div class="report-history-list" id="report-history-list"></div>
+          </div>
+        </div>
+        <div class="rs-divider"></div>
+        <div class="rs-col">
+          <div class="rs-sec-title">📊 나의 시험 통계</div>
+          <div class="sg" id="stats-grid"></div>
+          <div class="cat-wrap"><div class="cat-title">카테고리별 정답률</div><div id="cat-bars"></div></div>
+        </div>
+      </div>
+    </div>
+    <!-- 호환용 더미 (JS renderRank/renderStats 타겟 유지) -->
+    <div id="panel-stats" style="display:none;"></div>
+
+    <!-- 문제 만들기 -->
+    <div class="panel" id="panel-make">
+      <!-- 🔒 관리자 전용 잠금 오버레이 -->
+      <div id="make-lock-overlay" style="position:absolute;inset:0;z-index:20;background:rgba(245,250,255,0.96);backdrop-filter:blur(6px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;">
+        <div style="font-size:56px;line-height:1;">🔒</div>
+        <div style="font-size:21px;font-weight:900;color:var(--navy);font-family:'Jua',sans-serif;">관리자 전용 기능이에요</div>
+        <div style="font-size:14px;color:#f4a0a8;font-family:'Jua',sans-serif;">설정 탭에서 관리자 로그인 후 사용하세요</div>
+        <button onclick="adminLogin()" style="margin-top:4px;padding:13px 32px;font-size:17px;font-family:'Jua',sans-serif;background:linear-gradient(135deg,#f06878,#1d4ed8);color:#fff;border:none;border-radius:16px;cursor:pointer;box-shadow:0 5px 0 #1e3a8a;transition:transform .12s;" onmousedown="this.style.transform='translateY(3px)'" onmouseup="this.style.transform=''">🔓 관리자 로그인</button>
+      </div>
+      <div class="make-title">✏️ 문제 만들기</div>
+      <div class="make-desc">나만의 OX 문제를 만들어 공부하기 / 시험 어디에 추가할지 선택하세요!</div>
+      <div class="make-form">
+        <div class="form-row">
+          <div class="form-label">📝 문제 내용</div>
+          <textarea class="make-inp" id="make-q" placeholder="예) 대한민국의 수도는 서울이다" rows="2"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-label">✅ 정답 선택</div>
+          <div class="ox-pick">
+            <button class="op-btn" id="pick-o" onclick="pickAns(true)">⭕ O (맞다)</button>
+            <button class="op-btn" id="pick-x" onclick="pickAns(false)">❌ X (틀리다)</button>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-label">🏷️ 카테고리 (선택)</div>
+          <input class="cat-inp" id="make-cat" type="text" placeholder="예) 🌏지리, 📖국어, 🔬과학"/>
+        </div>
+        <div class="form-row">
+          <div class="form-label">📌 추가할 곳 선택</div>
+          <div class="dest-row">
+            <button class="dest-btn d-study" id="dest-study" onclick="setDest('study')">📖 공부하기</button>
+            <button class="dest-btn d-quiz on" id="dest-quiz" onclick="setDest('quiz')">📝 시험 문제</button>
+            <button class="dest-btn d-both" id="dest-both" onclick="setDest('both')">✨ 둘 다</button>
+          </div>
+        </div>
+        <button class="add-btn" onclick="addCustomQ()">➕ 문제 추가하기</button>
+      </div>
+      <div class="cq-wrap">
+        <div class="cq-head"><span class="cq-title-txt">내가 만든 문제</span><span class="cq-cnt" id="cq-count">0개</span></div>
+        <div class="cq-list" id="custom-list"><div class="cq-empty">아직 만든 문제가 없어요 ✏️</div></div>
+      </div>
+      <div class="make-actions">
+        <button class="use-btn" onclick="useCustomQ()">🚀 내 문제로 시험 보기!</button>
+        <button class="clr-btn" onclick="clearCustomQ()">🗑 전체 삭제</button>
+      </div>
+    </div>
+
+    <!-- 오답 노트는 시험·오답 탭 내부로 통합됨 -->
+
+    <!-- 🎵 미디어 -->
+    <div class="panel" id="panel-media">
+      <div class="media-wrap">
+        <div class="media-tabs">
+          <button class="mtab on" id="mtab-yt"       onclick="switchMedia('youtube',this)">📺 유튜브</button>
+          <button class="mtab"    id="mtab-soop"     onclick="switchMedia('soop',this)">🎙 SOOP</button>
+          <button class="mtab"    id="mtab-chzzk"    onclick="switchMedia('chzzk',this)">🟣 치지직</button>
+          <button class="mtab"    id="mtab-music"    onclick="switchMedia('music',this)">🎵 음악</button>
+          <button class="mtab"    id="mtab-playlist" onclick="switchMedia('playlist',this)">📋 추천 영상</button>
+          <button class="mtab"    id="mtab-localvideo" onclick="switchMedia('localvideo',this)">🎬 내 영상</button>
+          <button class="mtab"    id="mtab-timer"    onclick="switchMedia('timer',this)">⏰ 공부 타이머</button>
+        </div>
+
+        <!-- ─── 유튜브 IFrame 플레이어 ─── -->
+        <div class="mpanel on" id="mpanel-youtube">
+          <!-- 유튜브 탭버튼: 검색 제거, JS 참조용 hidden -->
+          <div style="position:absolute;visibility:hidden;pointer-events:none;width:0;height:0;overflow:hidden;">
+            <button id="yt-stab-url" class="yt-sub-tab on"></button>
+            <button id="yt-stab-search" class="yt-sub-tab"></button>
+          </div>
+          <!-- URL 재생 영역 -->
+          <div id="yt-tab-url">
+          <div class="yt-url-row">
+            <input class="yt-inp" id="yt-url-inp" type="text"
+              placeholder="유튜브 URL 또는 영상 ID 붙여넣기 (예: https://youtu.be/xxxxx)"
+              oninput="ytOnInput(this)"/>
+            <button class="yt-search-btn" onclick="ytLoad()">▶ 재생</button>
+            <button class="yt-clear-btn" id="yt-clear-btn" onclick="ytClear()" style="display:none;" title="영상 닫기">✕</button>
+          </div>
+          <div class="yt-player-wrap" id="yt-player-wrap">
+            <div class="yt-placeholder" id="yt-placeholder">
+              <div class="yt-ph-icon">📺</div>
+              <div class="yt-ph-text">유튜브 URL을 붙여넣으면<br>바로 여기서 재생돼요!</div>
+            </div>
+            <div id="yt-player-div"></div>
+          </div>
+          <div class="yt-yt-ctrl-row" id="yt-ctrl-row" style="display:none;">
+            <button class="yt-ctrl-btn" onclick="ytPlayerCmd('playVideo')">▶</button>
+            <button class="yt-ctrl-btn" onclick="ytPlayerCmd('pauseVideo')">⏸</button>
+            <button class="yt-ctrl-btn" onclick="ytPlayerCmd('stopVideo')">⏹</button>
+            <input type="range" id="yt-vol-slider" min="0" max="100" value="80"
+              oninput="ytSetVol(this.value)" style="flex:1;accent-color:var(--orange)"/>
+            <span style="color:#64748b;font-size:12px;" id="yt-vol-label">🔊 80</span>
+          </div>
+          <div class="yt-notice">※ 로컬 파일로 실행 시 재생이 제한될 수 있어요. 차단 시 유튜브에서 직접 시청해주세요.</div>
+          <!-- 저장된 링크 목록 -->
+          <div class="yt-saved-wrap">
+            <div class="yt-saved-header">
+              <span class="yt-saved-title">📌 저장된 영상 <span id="yt-saved-cnt"></span></span>
+              <div style="display:flex;gap:6px;">
+                <input class="yt-inp" id="yt-save-name" type="text" placeholder="영상 이름 (선택)" style="max-width:180px;padding:6px 10px;font-size:13px;"/>
+                <button class="yt-save-btn" onclick="ytSaveLink()">💾 저장</button>
+              </div>
+            </div>
+            <div class="yt-saved-list" id="yt-saved-list"><div class="yt-saved-empty">저장된 영상이 없어요. URL 입력 후 💾 저장을 눌러보세요!</div></div>
+          </div>
+          </div>
+          <!-- 유튜브 검색 영역 -->
+          <div id="yt-tab-search" style="display:none;">
+            <div style="display:flex;gap:8px;">
+              <input id="yt-search-inp" class="yt-inp" type="text" placeholder="유튜브에서 검색할 내용을 입력하세요..." 
+                onkeydown="if(event.key==='Enter')ytOpenSearch()"
+                style="flex:1;"/>
+              <button class="yt-search-btn" onclick="ytOpenSearch()">🔍 검색</button>
+            </div>
+            <div id="yt-search-results" style="display:none;"></div>
+            <div style="background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:14px 16px;margin-top:4px;">
+              <div style="font-size:13px;font-weight:900;color:var(--navy);margin-bottom:10px;">🔥 추천 검색어</div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px;" id="yt-suggest-chips">
+                <button class="yt-quick-btn" style="background:#fff9f9;color:var(--navy);border:1.5px solid var(--border);padding:6px 14px;border-radius:99px;font-size:clamp(10px,1.3vw,13px);font-family:'Jua',sans-serif;cursor:pointer;" onclick="ytSetSearch('한국사 핵심 정리')">📜 한국사 핵심 정리</button>
+                <button class="yt-quick-btn" style="background:#fff9f9;color:var(--navy);border:1.5px solid var(--border);padding:6px 14px;border-radius:99px;font-size:clamp(10px,1.3vw,13px);font-family:'Jua',sans-serif;cursor:pointer;" onclick="ytSetSearch('초등 수학 개념 정리')">📐 초등 수학 개념</button>
+                <button class="yt-quick-btn" style="background:#fff9f9;color:var(--navy);border:1.5px solid var(--border);padding:6px 14px;border-radius:99px;font-size:clamp(10px,1.3vw,13px);font-family:'Jua',sans-serif;cursor:pointer;" onclick="ytSetSearch('영어 회화 기초 강의')">🔤 영어 회화</button>
+                <button class="yt-quick-btn" style="background:#fff9f9;color:var(--navy);border:1.5px solid var(--border);padding:6px 14px;border-radius:99px;font-size:clamp(10px,1.3vw,13px);font-family:'Jua',sans-serif;cursor:pointer;" onclick="ytSetSearch('공부 집중 로파이 bgm')">🎧 집중 BGM</button>
+                <button class="yt-quick-btn" style="background:#fff9f9;color:var(--navy);border:1.5px solid var(--border);padding:6px 14px;border-radius:99px;font-size:clamp(10px,1.3vw,13px);font-family:'Jua',sans-serif;cursor:pointer;" onclick="ytSetSearch('초등 과학 실험')">🔬 과학 실험</button>
+                <button class="yt-quick-btn" style="background:#fff9f9;color:var(--navy);border:1.5px solid var(--border);padding:6px 14px;border-radius:99px;font-size:clamp(10px,1.3vw,13px);font-family:'Jua',sans-serif;cursor:pointer;" onclick="ytSetSearch('자연 백색소음 공부')">🌿 백색소음</button>
+                <button class="yt-quick-btn" style="background:#fff9f9;color:var(--navy);border:1.5px solid var(--border);padding:6px 14px;border-radius:99px;font-size:clamp(10px,1.3vw,13px);font-family:'Jua',sans-serif;cursor:pointer;" onclick="ytSetSearch('달라 채널')">🏫 달라</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- ─── SOOP 멀티뷰 ─── -->
+        <div class="mpanel" id="mpanel-soop">
+          <div class="soop-header-box">
+            <div class="soop-logo">🎙 SOOP</div>
+            <div class="soop-desc">스트리머 ID를 입력하거나 즐겨찾기에서 바로 추가하세요!</div>
+          </div>
+          <!-- SOOP 탭버튼 더미 -->
+          <div style="position:absolute;visibility:hidden;pointer-events:none;width:0;height:0;overflow:hidden;">
+            <button id="soop-stab-id"></button>
+            <button id="soop-stab-search"></button>
+          </div>
+
+          <!-- ★ 입력 + 즐겨찾기 통합 행 -->
+          <div id="soop-tab-id">
+            <!-- 1행: 입력창 + 추가 -->
+            <div class="soop-input-row">
+              <input class="soop-inp" id="soop-inp" type="text"
+                placeholder="스트리머 ID (쉼표로 여러 명)" autocomplete="off"
+                onkeydown="if(event.key==='Enter')soopAdd()"/>
+              <button class="soop-add-btn" onclick="soopAdd()">▶ 방송보기</button>
+              <button class="soop-preset-btn" onclick="soopLoadPreset()">📋 세트</button>
+            </div>
+            <div class="soop-preset-wrap" id="soop-preset-wrap" style="display:none">
+              <div class="soop-preset-list" id="soop-preset-list"></div>
+            </div>
+
+            <!-- 2행: 즐겨찾기 칩 + 등록 인풋 한 줄 -->
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;background:#1a1a2e;border-radius:10px;padding:7px 10px;margin-top:2px;">
+              <span style="font-size:11px;color:rgba(255,255,255,.45);white-space:nowrap;flex-shrink:0;">⭐ 즐겨찾기</span>
+              <div id="soop-fav-quick" style="display:flex;flex-wrap:wrap;gap:5px;flex:1;min-width:0;"></div>
+              <!-- 즐겨찾기 등록 인풋 (접기/펼치기) -->
+              <button onclick="soopFavFormToggle()"
+                style="padding:4px 9px;font-size:11px;font-family:'Jua',sans-serif;background:rgba(255,255,255,.1);color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.15);border-radius:7px;cursor:pointer;white-space:nowrap;flex-shrink:0;">+ 등록</button>
+            </div>
+            <!-- 즐겨찾기 등록 폼 (기본 숨김) -->
+            <div id="soop-fav-form" style="display:none;background:#1a1a2e;border-radius:0 0 10px 10px;padding:6px 10px 8px;margin-top:-2px;gap:5px;flex-direction:column;">
+              <div style="display:flex;gap:5px;flex-wrap:wrap;">
+                <input id="soop-fav-new-id" type="text" placeholder="스트리머 ID" autocomplete="off"
+                  style="flex:1;min-width:80px;padding:6px 9px;font-size:12px;font-family:'Jua',sans-serif;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:7px;color:#fff;outline:none;"
+                  onkeydown="if(event.key==='Enter')soopFavAdd()"/>
+                <input id="soop-fav-new-nick" type="text" placeholder="별명(선택)" autocomplete="off"
+                  style="width:80px;padding:6px 9px;font-size:12px;font-family:'Jua',sans-serif;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:7px;color:#fff;outline:none;"
+                  onkeydown="if(event.key==='Enter')soopFavAdd()"/>
+                <button onclick="soopFavAdd()"
+                  style="padding:6px 12px;font-size:12px;font-family:'Jua',sans-serif;background:rgba(240,104,120,.8);color:#fff;border:none;border-radius:7px;cursor:pointer;white-space:nowrap;">저장</button>
+                <button onclick="soopFavFormToggle()"
+                  style="padding:6px 10px;font-size:12px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.5);border:none;border-radius:7px;cursor:pointer;">✕</button>
+              </div>
+            </div>
+
+            <!-- 방송 그리드 -->
+            <div class="soop-grid-controls" style="margin-top:6px;">
+              <span class="soop-count-label">현재 <span id="soop-count">0</span>개 방송 중</span>
+              <div style="display:flex;gap:6px;">
+                <button class="soop-ctrl-btn" onclick="soopSetLayout(1)">1화면</button>
+                <button class="soop-ctrl-btn" onclick="soopSetLayout(2)">2분할</button>
+                <button class="soop-ctrl-btn" onclick="soopSetLayout(4)">4분할</button>
+                <button class="soop-ctrl-btn danger" onclick="soopClearAll()">전체 닫기</button>
+              </div>
+            </div>
+            <div class="soop-grid" id="soop-grid">
+              <div class="soop-empty">
+                <div class="soop-empty-icon">🎙</div>
+                <div>스트리머 ID를 입력하거나<br>즐겨찾기에서 추가하세요!</div>
+              </div>
+            </div>
+            <div class="soop-save-row">
+              <input class="soop-inp" id="soop-preset-name" type="text" placeholder="세트 이름" style="max-width:180px;"/>
+              <button class="soop-save-btn" onclick="soopSavePreset()">💾 세트 저장</button>
+            </div>
+          </div>
+
+          <!-- ★ 채팅창 슬라이드 패널 -->
+          <div id="soop-chat-panel" style="display:none;position:fixed;top:0;right:0;width:min(340px,92vw);height:100vh;z-index:950;background:#fff;box-shadow:-4px 0 24px rgba(0,0,0,.18);flex-direction:column;border-left:2px solid #fce0e0;">
+            <div style="background:linear-gradient(135deg,#e04858,#f06878);padding:13px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;">
+              <span style="font-size:18px;">💬</span>
+              <div style="flex:1;">
+                <div id="soop-chat-title" style="font-family:'Jua',sans-serif;font-size:14px;color:#fff;font-weight:900;">채팅창</div>
+                <div id="soop-chat-sub" style="font-size:10px;color:rgba(255,255,255,.75);">SOOP 라이브 채팅</div>
+              </div>
+              <!-- 채널 탭 -->
+              <div id="soop-chat-tabs" style="display:flex;gap:4px;flex-wrap:wrap;max-width:160px;"></div>
+              <button onclick="soopChatClose()" style="background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:8px;padding:5px 10px;font-size:13px;cursor:pointer;flex-shrink:0;">✕</button>
+            </div>
+            <iframe id="soop-chat-frame" src="" style="flex:1;border:none;width:100%;"></iframe>
+          </div>
+          <!-- 채팅 오버레이 배경 -->
+          <div id="soop-chat-bg" onclick="soopChatClose()" style="display:none;position:fixed;inset:0;z-index:940;background:rgba(0,0,0,.3);"></div>
+
+          <!-- ★ 방송 예정 메모 -->
+          <div style="background:#fff;border:1.5px solid #fce0e0;border-radius:12px;padding:12px 14px;margin-top:6px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+              <span style="font-size:13px;font-family:'Jua',sans-serif;color:#3a1820;font-weight:900;">📅 방송 예정 메모</span>
+              <button onclick="soopSchedAdd()" style="padding:4px 10px;font-size:11px;font-family:'Jua',sans-serif;background:linear-gradient(135deg,#e04858,#f06878);color:#fff;border:none;border-radius:8px;cursor:pointer;">+ 추가</button>
+            </div>
+            <div id="soop-sched-list" style="display:flex;flex-direction:column;gap:5px;"></div>
+            <div id="soop-sched-form" style="display:none;margin-top:8px;flex-direction:column;gap:6px;">
+              <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                <input id="soop-sched-id" type="text" placeholder="스트리머 ID" autocomplete="off"
+                  style="flex:1;min-width:80px;padding:7px 10px;font-size:12px;font-family:'Jua',sans-serif;border:1.5px solid #fce0e0;border-radius:8px;color:#3a1820;outline:none;"/>
+                <input id="soop-sched-day" type="text" placeholder="요일 (예: 월,수,금)" autocomplete="off"
+                  style="width:110px;padding:7px 10px;font-size:12px;font-family:'Jua',sans-serif;border:1.5px solid #fce0e0;border-radius:8px;color:#3a1820;outline:none;"/>
+                <input id="soop-sched-time" type="text" placeholder="시간 (예: 20:00)" autocomplete="off"
+                  style="width:90px;padding:7px 10px;font-size:12px;font-family:'Jua',sans-serif;border:1.5px solid #fce0e0;border-radius:8px;color:#3a1820;outline:none;"/>
+              </div>
+              <div style="display:flex;gap:6px;">
+                <input id="soop-sched-note" type="text" placeholder="메모 (선택)" autocomplete="off"
+                  style="flex:1;padding:7px 10px;font-size:12px;font-family:'Jua',sans-serif;border:1.5px solid #fce0e0;border-radius:8px;color:#3a1820;outline:none;"/>
+                <button onclick="soopSchedSave()" style="padding:7px 14px;font-size:12px;font-family:'Jua',sans-serif;background:linear-gradient(135deg,#44c9a8,#34b998);color:#fff;border:none;border-radius:8px;cursor:pointer;">저장</button>
+                <button onclick="soopSchedFormHide()" style="padding:7px 10px;font-size:12px;font-family:'Jua',sans-serif;background:#f1f5f9;color:#64748b;border:none;border-radius:8px;cursor:pointer;">취소</button>
+              </div>
+            </div>
+            <div id="soop-sched-empty" style="font-size:12px;color:#c0a8b0;text-align:center;padding:10px 0;">방송 예정을 등록하면 여기에 표시돼요!</div>
+          </div>
+
+          <!-- ★ 응원 투표 -->
+          <div style="background:#fff;border:1.5px solid #fce0e0;border-radius:12px;padding:12px 14px;margin-top:6px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+              <span style="font-size:13px;font-family:'Jua',sans-serif;color:#3a1820;font-weight:900;">🏆 스트리머 응원 투표</span>
+              <button onclick="soopVoteReset()" style="padding:4px 10px;font-size:10px;font-family:'Jua',sans-serif;background:#f1f5f9;color:#94a3b8;border:none;border-radius:8px;cursor:pointer;">초기화</button>
+            </div>
+            <div id="soop-vote-list" style="display:flex;flex-direction:column;gap:6px;"></div>
+            <div id="soop-vote-empty" style="font-size:12px;color:#c0a8b0;text-align:center;padding:10px 0;">즐겨찾기 스트리머를 등록하면 응원 투표가 생겨요!</div>
+          </div>
+
+          <!-- 더미 -->
+          <div id="soop-tab-search" style="display:none;">
+            <input id="soop-search-inp" type="text" style="display:none;"/>
+            <div id="soop-search-results" style="display:none;"></div>
+            <div id="soop-fav-chips" style="display:none;"><div id="soop-fav-empty-msg"></div></div>
+          </div>
+        </div>
+
+        <!-- ─── 치지직 멀티뷰 ─── -->
+        <div class="mpanel" id="mpanel-chzzk">
+          <div class="soop-header-box">
+            <div class="soop-logo">🟣 치지직 실시간 방송</div>
+            <div class="soop-desc">채널 ID 또는 URL을 입력해서 방송을 불러오세요!</div>
+          </div>
+          <!-- 채널 입력 -->
+          <div class="soop-input-row" style="margin-top:10px;">
+            <input class="soop-inp" id="chzzk-inp" type="text"
+              placeholder="채널 ID 또는 URL 입력 (쉼표로 여러 명)" autocomplete="off"
+              onkeydown="if(event.key==='Enter')chzzkAdd()"/>
+            <button class="soop-add-btn" onclick="chzzkAdd()">+ 추가</button>
+          </div>
+          <div class="soop-grid-controls">
+            <span class="soop-count-label">현재 <span id="chzzk-count">0</span>개 방송 중</span>
+            <div style="display:flex;gap:6px;">
+              <button class="soop-ctrl-btn" onclick="chzzkSetLayout(1)">1화면</button>
+              <button class="soop-ctrl-btn" onclick="chzzkSetLayout(2)">2분할</button>
+              <button class="soop-ctrl-btn" onclick="chzzkSetLayout(4)">4분할</button>
+              <button class="soop-ctrl-btn danger" onclick="chzzkClearAll()">전체 닫기</button>
+            </div>
+          </div>
+          <div class="soop-grid" id="chzzk-grid" data-cols="1">
+            <div class="soop-empty">
+              <div class="soop-empty-icon">🟣</div>
+              <div>채널 ID를 입력해서<br>치지직 방송을 불러오세요!</div>
+              <div style="font-size:12px;opacity:.6;margin-top:6px;">예: abc123def (채널 고유 ID)</div>
+            </div>
+          </div>
+          <div style="margin-top:8px;padding:8px 12px;background:rgba(99,102,241,.08);border-radius:10px;font-size:12px;color:#6366f1;font-family:'Jua',sans-serif;">
+            💡 치지직 채널 URL에서 <b>live/</b> 뒤의 영문+숫자 ID를 복사해서 입력하세요<br>
+            예: chzzk.naver.com/live/<b>abc123def456</b>
+          </div>
+        </div>
+        <!-- ─── 음악 플레이어 (파일 업로드 + 내장 BGM) ─── -->
+        <div class="mpanel" id="mpanel-music">
+          <div class="music-player">
+            <div class="mp-disc" id="mp-disc">🎵</div>
+            <div class="mp-title" id="mp-title">재생할 음악을 선택하세요</div>
+            <div class="mp-artist" id="mp-artist">—</div>
+            <div class="mp-progress-wrap">
+              <span class="mp-time" id="mp-cur">0:00</span>
+              <div class="mp-progress-bar" id="mp-prog-bar" onclick="mpSeek(event)">
+                <div class="mp-progress-fill" id="mp-fill"></div>
+              </div>
+              <span class="mp-time" id="mp-dur">0:00</span>
+            </div>
+            <div class="mp-controls">
+              <button class="mp-btn" onclick="mpPrev()">⏮</button>
+              <button class="mp-btn mp-play" id="mp-play-btn" onclick="mpToggle()">▶</button>
+              <button class="mp-btn" onclick="mpNext()">⏭</button>
+              <button class="mp-btn" id="mp-shuffle-btn" onclick="mpToggleShuffle()">🔀</button>
+              <button class="mp-btn" id="mp-repeat-btn"  onclick="mpToggleRepeat()">🔁</button>
+            </div>
+            <div class="mp-vol-row">
+              🔉<input type="range" class="mp-vol" id="mp-vol" min="0" max="1" step="0.05" value="0.7"
+                oninput="mpSetVol(this.value)"/>🔊
+            </div>
+          </div>
+
+          <!-- 파일 업로드 드롭존 -->
+          <div class="mp-upload-zone" id="mp-upload-zone"
+            ondragover="event.preventDefault();this.classList.add('drag')"
+            ondragleave="this.classList.remove('drag')"
+            ondrop="mpDrop(event)">
+            <div class="mp-upload-icon">🎵</div>
+            <div class="mp-upload-text">음악 파일을 드래그하거나 클릭해서 업로드</div>
+            <div class="mp-upload-sub">MP3, OGG, WAV, AAC, FLAC, M4A 지원 · 여러 파일 한 번에 가능</div>
+            <input type="file" id="mp-file-inp" accept="audio/*,.mp3,.ogg,.wav,.aac,.flac,.m4a,.opus,.webm,.weba" multiple style="display:none"
+              onchange="mpFilePicked(this.files)"/>
+            <button class="mp-upload-btn" onclick="document.getElementById('mp-file-inp').click()">📂 파일 선택</button>
+          </div>
+
+          <div class="mp-list-header">
+            <div class="mp-list-title">🎵 재생목록 <span class="mp-list-cnt" id="mp-list-cnt">(0곡)</span></div>
+            <button class="mp-list-clear" onclick="mpClearAll()">🗑 전체 삭제</button>
+          </div>
+          <div class="mp-list" id="mp-list"><div class="mp-empty">파일을 업로드하거나 내장 BGM을 선택하세요 🎧</div></div>
+          <audio id="mp-audio"></audio>
+        </div>
+
+        <!-- ─── 추천 영상 ─── -->
+        <div class="mpanel" id="mpanel-playlist">
+          <div class="pl-header">📋 공부에 좋은 유튜브 영상 추천</div>
+          <div class="pl-grid" id="pl-grid"></div>
+        </div>
+
+        <!-- ─── 내 영상 (로컬 파일) ─── -->
+        <div class="mpanel" id="mpanel-localvideo">
+          <div class="lv-header">
+            <div class="lv-title">🎬 내 영상 재생</div>
+            <div class="lv-desc">MP4, AVI, MOV, WebM 등 영상 파일을 불러와 재생해요.</div>
+          </div>
+          <label class="lv-upload-btn">
+            📂 영상 파일 열기
+            <input type="file" id="lv-file-input" accept="video/mp4,video/x-msvideo,video/quicktime,video/webm,video/*" style="display:none" onchange="lvLoadFile(this)"/>
+          </label>
+          <div class="lv-player-wrap" id="lv-player-wrap">
+            <div class="lv-filename" id="lv-filename" style="color:#c4b5fd;">파일을 선택하면 여기서 재생돼요 🎬</div>
+            <div id="lv-video-placeholder" style="width:100%;min-height:200px;background:linear-gradient(135deg,#ede9fe,#fce7f3);border-radius:14px;border:2px dashed #c4b5fd;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;cursor:pointer;" onclick="document.getElementById('lv-file-input').click()">
+              <div style="font-size:48px;">🎬</div>
+              <div style="font-size:14px;color:#8b5cf6;font-weight:700;">여기를 클릭해서 영상을 선택하세요</div>
+              <div style="font-size:11px;color:#c07080;">MP4, AVI, MOV, WebM 지원</div>
+            </div>
+            <video id="lv-video" class="lv-video" controls playsinline style="display:none;"></video>
+            <div class="lv-controls">
+              <button class="lv-ctrl-btn" onclick="document.getElementById('lv-video').playbackRate=0.5">0.5×</button>
+              <button class="lv-ctrl-btn" onclick="document.getElementById('lv-video').playbackRate=1">1×</button>
+              <button class="lv-ctrl-btn" onclick="document.getElementById('lv-video').playbackRate=1.5">1.5×</button>
+              <button class="lv-ctrl-btn" onclick="document.getElementById('lv-video').playbackRate=2">2×</button>
+              <button class="lv-ctrl-btn lv-fs-btn" onclick="lvFullscreen()">⛶ 전체화면</button>
+            </div>
+          </div>
+          <div class="lv-tip">💡 영상은 이 기기에서만 재생되며 저장되지 않아요.</div>
+        </div>
+
+        <!-- ─── 공부 타이머 (뽀모도로) ─── -->
+        <div class="mpanel" id="mpanel-timer">
+          <div class="pomo-card">
+            <div class="pomo-label" id="pomo-label">🍅 집중 시간</div>
+            <div class="pomo-clock" id="pomo-clock">25:00</div>
+            <div class="pomo-bar-wrap"><div class="pomo-bar" id="pomo-bar"></div></div>
+            <div class="pomo-round">Round <span id="pomo-round">1</span> / <span id="pomo-total-rounds">4</span></div>
+            <div class="pomo-btns">
+              <button class="pomo-btn start" id="pomo-start-btn" onclick="pomoToggle()">▶ 시작</button>
+              <button class="pomo-btn reset" onclick="pomoReset()">↺ 초기화</button>
+              <button class="pomo-btn skip"  onclick="pomoSkip()">⏭ 건너뛰기</button>
+            </div>
+          </div>
+          <div class="pomo-settings">
+            <div class="pomo-set-title">⚙️ 설정</div>
+            <div class="pomo-set-row">
+              <label>집중 시간</label>
+              <div class="pomo-set-pills">
+                <button class="ppill" onclick="pomoSet('work',15,this)">15분</button>
+                <button class="ppill on" onclick="pomoSet('work',25,this)">25분</button>
+                <button class="ppill" onclick="pomoSet('work',50,this)">50분</button>
+              </div>
+            </div>
+            <div class="pomo-set-row">
+              <label>짧은 휴식</label>
+              <div class="pomo-set-pills">
+                <button class="ppill" onclick="pomoSet('short',3,this)">3분</button>
+                <button class="ppill on" onclick="pomoSet('short',5,this)">5분</button>
+                <button class="ppill" onclick="pomoSet('short',10,this)">10분</button>
+              </div>
+            </div>
+            <div class="pomo-set-row">
+              <label>긴 휴식</label>
+              <div class="pomo-set-pills">
+                <button class="ppill" onclick="pomoSet('long',10,this)">10분</button>
+                <button class="ppill on" onclick="pomoSet('long',15,this)">15분</button>
+                <button class="ppill" onclick="pomoSet('long',30,this)">30분</button>
+              </div>
+            </div>
+            <div class="pomo-set-row">
+              <label>라운드 수</label>
+              <div class="pomo-set-pills">
+                <button class="ppill" onclick="pomoSetRounds(2,this)">2회</button>
+                <button class="ppill on" onclick="pomoSetRounds(4,this)">4회</button>
+                <button class="ppill" onclick="pomoSetRounds(6,this)">6회</button>
+              </div>
+            </div>
+            <div class="pomo-set-row">
+              <label>완료 알림음</label>
+              <div class="pomo-set-pills">
+                <button class="ppill on" id="pomo-sound-btn" onclick="pomoToggleSound(this)">🔊 켜짐</button>
+              </div>
+            </div>
+          </div>
+          <div class="pomo-log-wrap">
+            <div class="pomo-log-title">📋 오늘의 기록</div>
+            <div class="pomo-log" id="pomo-log"><div style="color:#c0a0a8;font-size:13px;">아직 기록이 없어요. 공부를 시작해봐요! 🍅</div></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  
+
+    <!-- ⚙️ 설정 -->
+    <div class="panel" id="panel-settings">
+      <div class="settings-wrap">
+
+        <!-- 관리자 로그인 상태 배너 -->
+        <div id="st-login-banner" style="background:linear-gradient(135deg,#e06080,#7c3aed);border-radius:16px;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+          <div>
+            <div id="st-login-status" style="font-size:15px;font-weight:900;color:#fff;">🔒 관리자 로그인이 필요합니다</div>
+            <div style="font-size:12px;color:rgba(255,255,255,.7);margin-top:2px;" id="st-login-hint">ID: admin99 / PW: 99admin</div>
+          </div>
+          <button id="st-login-btn" onclick="adminLogin()" style="padding:10px 20px;font-size:14px;font-family:'Jua',sans-serif;background:#fff;color:#e06080;border:none;border-radius:12px;cursor:pointer;font-weight:900;white-space:nowrap;">🔓 로그인</button>
+        </div>
+
+        <!-- 앱 정보 -->
+        <div class="settings-section">
+          <div class="settings-sec-title">ℹ️ 앱 정보</div>
+          <div class="settings-info-grid">
+            <div class="settings-info-item"><span class="sii-label">앱 이름</span><span class="sii-val">달라 초등학교</span></div>
+            <div class="settings-info-item"><span class="sii-label">버전</span><span class="sii-val">v67</span></div>
+            <div class="settings-info-item"><span class="sii-label">전체 문제 수</span><span class="sii-val" id="settings-q-cnt">-</span></div>
+          </div>
+        </div>
+
+        <!-- 화면 설정 -->
+        <div class="settings-section">
+          <div class="settings-sec-title">🎨 화면 설정</div>
+          <div style="display:flex;flex-direction:column;gap:14px;margin-top:8px;">
+            <!-- 글씨 크기 -->
+            <div>
+              <div class="settings-sec-desc" style="margin-bottom:8px;font-weight:700;color:var(--navy);">📝 문제 글씨 크기</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button class="font-size-btn on" id="fs-small" onclick="setFontSize('small',this)">작게</button>
+                <button class="font-size-btn" id="fs-medium" onclick="setFontSize('medium',this)">보통</button>
+                <button class="font-size-btn" id="fs-large" onclick="setFontSize('large',this)">크게</button>
+                <button class="font-size-btn" id="fs-xlarge" onclick="setFontSize('xlarge',this)">매우 크게</button>
+              </div>
+            </div>
+            <!-- 다크모드 -->
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div>
+                <div class="settings-sec-desc" style="font-weight:700;color:var(--navy);">🌙 다크모드</div>
+                <div class="settings-sec-desc">어두운 화면으로 눈을 편하게</div>
+              </div>
+              <button onclick="toggleDark()" id="dark-toggle-settings" style="padding:8px 18px;font-size:13px;font-family:'Jua',sans-serif;background:var(--navy);color:#fff;border:none;border-radius:10px;cursor:pointer;">🌙 토글</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 관리자 전용 섹션 -->
+        <div id="admin-tools-section" style="display:none;flex-direction:column;gap:12px;">
+
+          <!-- 나만의 문제 만들기 (관리자 전용) -->
+<div class="settings-section">
+          <div class="settings-sec-title">✏️ 나만의 문제 만들기</div>
+          <div class="settings-sec-desc">나만의 OX 문제를 만들어 공부하거나 시험 볼 수 있어요!</div>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-top:6px;">
+            <div>
+              <div class="form-label">📝 문제 내용</div>
+              <textarea class="make-inp" id="make-q2" placeholder="예) 대한민국의 수도는 서울이다" rows="2" style="width:100%;margin-top:4px;"></textarea>
+            </div>
+            <div>
+              <div class="form-label">✅ 정답 선택</div>
+              <div class="ox-pick" style="margin-top:4px;">
+                <button class="op-btn" id="pick-o2" onclick="pickAns2(true)">⭕ O (맞다)</button>
+                <button class="op-btn" id="pick-x2" onclick="pickAns2(false)">❌ X (틀리다)</button>
+              </div>
+            </div>
+            <div>
+              <div class="form-label">🏷️ 카테고리 (선택)</div>
+              <input class="cat-inp" id="make-cat2" type="text" placeholder="예) 🌏지리, 📖국어" style="margin-top:4px;width:100%;"/>
+            </div>
+            <button onclick="addCustomQ2()" style="width:100%;padding:12px;font-size:15px;font-family:'Jua',sans-serif;background:linear-gradient(135deg,#6366f1,#e06080);border:none;border-radius:12px;color:#fff;cursor:pointer;font-weight:900;box-shadow:0 3px 0 #3730a3;">➕ 문제 추가하기</button>
+          </div>
+          <div style="margin-top:10px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+              <span style="font-size:13px;font-weight:900;color:var(--navy);">내가 만든 문제</span>
+              <span id="cq-count2" style="font-size:12px;color:#6366f1;background:#eef2ff;padding:2px 10px;border-radius:99px;">0개</span>
+            </div>
+            <div id="custom-list2" style="display:flex;flex-direction:column;gap:6px;"></div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:10px;">
+            <button onclick="useCustomQ()" style="flex:1;padding:11px;font-size:14px;font-family:'Jua',sans-serif;background:linear-gradient(135deg,#34c498,#16a34a);border:none;border-radius:12px;color:#fff;cursor:pointer;font-weight:900;">🚀 내 문제로 시험 보기</button>
+            <button onclick="clearCustomQ()" style="padding:11px 16px;font-size:14px;font-family:'Jua',sans-serif;background:#f1f5f9;border:1.5px solid #e2e8f0;border-radius:12px;color:#64748b;cursor:pointer;">🗑 전체 삭제</button>
+          </div>
+        </div>
+
+
+          <!-- 관리자 계정 목록 -->
+          <div class="settings-section">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+              <div class="settings-sec-title">🔐 관리자 계정</div>
+              <button onclick="adminAddAccount()" style="padding:7px 14px;font-size:12px;font-family:'Jua',sans-serif;background:#eef2ff;color:#e06080;border:1.5px solid #c7d2fe;border-radius:8px;cursor:pointer;">+ 계정 추가</button>
+            </div>
+            <div class="admin-accounts-list" id="admin-accounts-list"></div>
+          </div>
+
+          <!-- 문제 직접 추가 -->
+          <div class="settings-section" style="border-color:#c4f0e4;">
+            <div class="settings-sec-title" style="color:#15803d;">➕ 문제 뱅크에 직접 추가</div>
+            <div class="settings-sec-desc">전체 문제 풀에 영구 추가됩니다</div>
+            <div style="display:flex;flex-direction:column;gap:8px;margin-top:6px;">
+              <textarea id="admin-q-text" placeholder="문제 내용을 입력하세요" rows="2"
+                style="width:100%;padding:10px 14px;font-size:14px;font-family:'Jua',sans-serif;background:#f0fdf4;border:2px solid #c4f0e4;border-radius:10px;color:var(--navy);outline:none;resize:vertical;"></textarea>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <select id="admin-q-ans"
+                  style="padding:9px 14px;font-size:14px;font-family:'Jua',sans-serif;background:#f0fdf4;border:2px solid #c4f0e4;border-radius:10px;color:var(--navy);outline:none;cursor:pointer;">
+                  <option value="true">⭕ O (맞다)</option>
+                  <option value="false">❌ X (틀리다)</option>
+                </select>
+                <input id="admin-q-cat" type="text" placeholder="카테고리 (예: 🔬과학)" style="flex:1;min-width:120px;padding:9px 14px;font-size:14px;font-family:'Jua',sans-serif;background:#f0fdf4;border:2px solid #c4f0e4;border-radius:10px;color:var(--navy);outline:none;"/>
+              </div>
+              <button onclick="adminAddQ()" style="width:100%;padding:12px;font-size:15px;font-family:'Jua',sans-serif;background:linear-gradient(135deg,#34c498,#16a34a);border:none;border-radius:12px;color:#fff;cursor:pointer;font-weight:900;box-shadow:0 3px 0 #2a6848;">➕ 문제 뱅크에 추가</button>
+            </div>
+          </div>
+
+          <!-- 데이터 관리 -->
+          <div class="settings-section" style="border-color:#fcc8cc;">
+            <div class="settings-sec-title" style="color:#d04050;">🛠 데이터 관리</div>
+            <div class="settings-sec-desc">초기화는 되돌릴 수 없으니 신중하게 사용하세요</div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">
+              <button onclick="adminResetRank()" style="padding:10px 16px;font-size:13px;font-family:'Jua',sans-serif;background:#fde8e8;color:#d04050;border:none;border-radius:10px;cursor:pointer;font-weight:700;">🏆 랭킹 초기화</button>
+              <button onclick="adminResetStats()" style="padding:10px 16px;font-size:13px;font-family:'Jua',sans-serif;background:#fde8e8;color:#d04050;border:none;border-radius:10px;cursor:pointer;font-weight:700;">📊 통계 초기화</button>
+              <button onclick="adminResetWrong()" style="padding:10px 16px;font-size:13px;font-family:'Jua',sans-serif;background:#fde8e8;color:#d04050;border:none;border-radius:10px;cursor:pointer;font-weight:700;">📕 오답 초기화</button>
+              <button onclick="adminResetAll()" style="padding:10px 16px;font-size:13px;font-family:'Jua',sans-serif;background:#701828;color:#fff;border:none;border-radius:10px;cursor:pointer;font-weight:700;">⚠️ 전체 초기화</button>
+              <button onclick="adminLogout()" style="padding:10px 16px;font-size:13px;font-family:'Jua',sans-serif;background:#e0f2fe;color:#0369a1;border:none;border-radius:10px;cursor:pointer;font-weight:700;">🚪 로그아웃</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+
+<!-- ⏱ 타임어택 러시 게임 화면 -->
+
+<!-- 🧱 테트리스 게임 화면 -->
+<div class="game-screen" id="game-tetris">
+  <div class="gs-header" style="background:rgba(255,251,235,.97);backdrop-filter:blur(10px);border-bottom:2px solid rgba(230,160,40,.3);">
+    <button class="gs-back" id="tet-back-btn" onclick="closeGame('tetris')">← 나가기</button>
+    <div class="gs-title">🧱 테트리스</div>
+    <div class="gs-info" id="tet-level-display">Lv.1</div>
+  </div>
+  <div class="gs-body">
+    <div class="tet-wrap">
+      <div class="tet-canvas-wrap">
+        <canvas id="tet-canvas" width="240" height="480"></canvas>
+        <div class="tet-pause-overlay" id="tet-pause-overlay">
+          <span>⏸ 일시정지</span>
+          <span style="font-size:.5em;opacity:.6">P키 또는 버튼으로 재개</span>
+        </div>
+      </div>
+      <div class="tet-side">
+        <div class="tet-info-box">
+          <div class="tet-info-label">SCORE</div>
+          <div class="tet-info-val" id="tet-score">0</div>
+        </div>
+        <div class="tet-info-box">
+          <div class="tet-info-label">LEVEL</div>
+          <div class="tet-info-val" id="tet-level">1</div>
+        </div>
+        <div class="tet-info-box">
+          <div class="tet-info-label">LINES</div>
+          <div class="tet-info-val" id="tet-lines">0</div>
+        </div>
+        <div class="tet-next-box">
+          <div class="tet-next-label">NEXT</div>
+          <canvas id="tet-next" width="80" height="80"></canvas>
+        </div>
+        <div class="tet-btns">
+          <button class="tet-btn pause" onclick="tetTogglePause()">⏸ 일시정지</button>
+          <button class="tet-btn restart" onclick="tetRestart()">🔄 재시작</button>
+        </div>
+        <div class="tet-controls">
+          ← → 이동<br>
+          ↑ / Z 회전<br>
+          ↓ 빠르게<br>
+          Space 즉시낙하<br>
+          P 일시정지
+        </div>
+      </div>
+    </div>
+    <!-- 모바일 방향키 -->
+    <div class="tet-dpad">
+      <div class="tet-dpad-row">
+        <div class="tet-dpad-btn" onclick="tetMove(0,-1)">↺</div>
+        <div class="tet-dpad-btn" onclick="tetMoveDir(-1)">←</div>
+        <div class="tet-dpad-btn" onclick="tetMoveDir(1)">→</div>
+      </div>
+      <div class="tet-dpad-row">
+        <div class="tet-dpad-btn" onclick="tetDrop()">⬇</div>
+        <div class="tet-dpad-btn" style="width:clamp(112px,27vw,144px);" onclick="tetHardDrop()">Space ↓↓</div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="game-result" id="tetris-result">
+  <div class="gr-card">
+    <div class="gr-icon">🧱</div>
+    <div class="gr-title">게임 오버!</div>
+    <div class="gr-score" id="tet-result-score">0점</div>
+    <div class="gr-sub" id="tet-result-sub">레벨 1 · 0줄 제거</div>
+    <div class="gr-btns">
+      <button class="gr-btn retry" onclick="tetRetry()">🔄 다시 하기</button>
+      <button class="gr-btn home" onclick="closeGame('tetris')">🏠 허브로</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- 💣 지뢰찾기 게임 화면 -->
+<div class="game-screen" id="game-minesweeper">
+  <div class="gs-header" style="background:rgba(241,245,249,.97);backdrop-filter:blur(10px);border-bottom:2px solid #e2e8f0;color:var(--navy);">
+    <button class="gs-back" onclick="closeGame('minesweeper')">← 나가기</button>
+    <div class="gs-title">💣 지뢰찾기</div>
+    <div class="gs-info" id="ms-status">준비</div>
+  </div>
+  <div class="gs-body" id="ms-body">
+    <!-- JS로 렌더 -->
+  </div>
+</div>
+<div class="game-result" id="minesweeper-result">
+  <div class="gr-card">
+    <div class="gr-icon" id="minesweeper-result-icon">🎉</div>
+    <div class="gr-title" id="minesweeper-result-title">성공!</div>
+    <div class="gr-score" id="minesweeper-result-score">🏆</div>
+    <div class="gr-sub" id="minesweeper-result-sub"></div>
+    <div class="gr-btns">
+      <button class="gr-btn retry" onclick="retryMs()">🔄 다시 하기</button>
+      <button class="gr-btn home" onclick="closeGame('minesweeper')">🏠 허브로</button>
+    </div>
+  </div>
+</div>
+
+<!-- 🎯 두더지 잡기 게임 화면 -->
+<div class="game-screen" id="game-mole">
+  <div class="gs-header" style="background:rgba(254,243,199,.97);backdrop-filter:blur(10px);border-bottom:2px solid rgba(180,83,9,.15);color:var(--navy);">
+    <button class="gs-back" onclick="closeGame('mole')">← 나가기</button>
+    <div class="gs-title">🐹 두더지 잡기</div>
+    <div class="gs-info" id="mole-time-display">30초</div>
+  </div>
+  <div class="gs-body" id="mole-body">
+    <!-- JS로 렌더 -->
+  </div>
+</div>
+<div class="game-result" id="mole-result">
+  <div class="gr-card">
+    <div class="gr-icon">🐹</div>
+    <div class="gr-title">시간 종료!</div>
+    <div class="gr-score" id="mole-result-score">0점</div>
+    <div class="gr-sub" id="mole-result-sub"></div>
+    <div class="gr-btns">
+      <button class="gr-btn retry" onclick="retryMole()">🔄 다시 하기</button>
+      <button class="gr-btn home" onclick="closeGame('mole')">🏠 허브로</button>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+<!-- 성적표 오버레이 -->
+<div class="ov" id="ov">
+  <div class="report-card">
+    <div class="rc-header">
+      <div class="rc-school">✦ 달라 초등학교 ✦</div>
+      <div class="rc-title-txt">📋 성적표</div>
+      <div class="rc-subtitle" id="rc-subtitle">수고했어요!</div>
+      <div class="rc-stamp">
+        <div class="grade-letter" id="rc-stamp-grade">S</div>
+        <div>등급</div>
+      </div>
+    </div>
+    <div class="rc-body">
+      <div class="rc-student-row">
+        <div class="rc-name-wrap">
+          <div class="rc-name-label">학생 이름</div>
+          <div class="rc-name" id="rc-name">학생</div>
+        </div>
+        <div class="rc-date" id="rc-date">2025.01.01</div>
+      </div>
+
+      <div class="rc-score-wrap">
+        <div class="rc-score-label">최종 점수</div>
+        <div class="rc-score-num" id="rc-score">0점</div>
+        <div class="rc-score-sub" id="rc-score-sub">정답률 0%</div>
+      </div>
+
+      <div class="rc-items">
+        <div class="rc-item good"><div class="ri-label">✅ 정답</div><div class="ri-val" id="rc-correct">0</div></div>
+        <div class="rc-item bad"><div class="ri-label">❌ 오답</div><div class="ri-val" id="rc-wrong">0</div></div>
+        <div class="rc-item"><div class="ri-label">🔥 최고 콤보</div><div class="ri-val" id="rc-combo">0</div></div>
+        <div class="rc-item"><div class="ri-label">📝 푼 문제</div><div class="ri-val" id="rc-total">0</div></div>
+      </div>
+
+      <div class="rc-grade-bar">
+        <div class="rc-grade-label">나의 등급</div>
+        <div class="grade-track">
+          <div class="grade-seg d" id="gs-d">D</div>
+          <div class="grade-seg c" id="gs-c">C</div>
+          <div class="grade-seg b" id="gs-b">B</div>
+          <div class="grade-seg a" id="gs-a">A</div>
+          <div class="grade-seg s" id="gs-s">S</div>
+        </div>
+      </div>
+
+      <div class="rc-comment">
+        <div class="rc-comment-icon" id="rc-comment-icon">🏆</div>
+        <div class="rc-comment-text" id="rc-comment-text">훌륭해요!</div>
+      </div>
+
+      <div class="rc-btns">
+        <button class="rc-btn m" onclick="restartQuiz()">🔄 다시 시험 보기!</button>
+        <button class="rc-btn s2" onclick="goHome()">🏠 처음으로</button>
+      </div>
+      <div class="rc-share-row" style="display:flex;gap:8px;margin-top:10px;">
+        <button id="rc-img-btn" class="rc-btn s2" style="font-size:clamp(12px,1.6vw,15px);display:flex;align-items:center;justify-content:center;gap:5px;" onclick="shareResultImage()">
+          <span class="rsb-txt">📸 이미지 저장</span>
+        </button>
+        <button id="rc-txt-btn" class="rc-btn s2" style="font-size:clamp(12px,1.6vw,15px);display:flex;align-items:center;justify-content:center;gap:5px;" onclick="shareResultText()">
+          <span class="rsb-txt">📋 텍스트 공유</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
