@@ -2568,6 +2568,8 @@ function switchMedia(name,btn){
   // 탭별 초기화
   if(name==='chzzk') chzzkRender&&chzzkRender();
   if(name==='soop') soopFavInit&&soopFavInit();
+  if(name==='music') mpRenderList&&mpRenderList();
+  if(name==='localvideo') lvRenderSaved&&lvRenderSaved();
 }
 
 /* ─── 미디어 초기화 ─── */
