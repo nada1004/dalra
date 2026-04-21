@@ -1096,8 +1096,8 @@ body.game-open .hd,body.game-open .sbar,body.game-open .tabs,body.game-open .pba
 #mole-result .gr-score{color:#a04018;}
 
 /* ═══ 미디어 패널 ═══ */
-#panel-media{padding:clamp(8px,1.2vh,12px) clamp(3px,0.5vw,6px) 0;align-items:center;overflow-y:auto;}
-.media-wrap{width:100%;max-width:100%;display:flex;flex-direction:column;gap:clamp(10px,1.6vh,16px);min-height:0;overflow:visible;}
+#panel-media{padding:0;align-items:stretch;display:flex;flex-direction:column;}
+.media-wrap{width:100%;max-width:100%;display:flex;flex-direction:column;gap:clamp(10px,1.6vh,16px);min-height:0;overflow-y:auto;flex:1;padding:clamp(8px,1.2vh,12px) clamp(3px,0.5vw,6px) 0;}
 .media-tabs{display:flex;gap:8px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px;position:sticky;top:0;z-index:10;background:var(--bg);}
 .media-tabs::-webkit-scrollbar{display:none;}
 .mtab{padding:clamp(7px,1.2vh,11px) clamp(12px,1.8vw,20px);font-size:clamp(11px,1.4vw,14px);
