@@ -301,7 +301,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .tabs{flex-shrink:0;display:flex;background:#fff;border-bottom:2px solid #fff0f0;overflow-x:auto;position:relative;z-index:860;}
 .tabs::-webkit-scrollbar{display:none;}
 .tab{flex:1;min-width:max-content;padding:clamp(7px,1.4vh,11px) clamp(4px,1vw,8px);font-size:clamp(12px,1.6vw,15px);font-family:'Jua',sans-serif;background:none;border:none;border-bottom:6px solid transparent;color:#f4a0a8;cursor:pointer;transition:all .25s cubic-bezier(.34,.56,.64,.89);margin-bottom:-6px;white-space:nowrap;position:relative;}
-.tab.on{color:var(--blue);border-bottom-color:var(--blue);background:rgba(240,104,120,.13);font-weight:700;animation:tabSlide .3s cubic-bezier(.34,1.56,.64,1);}
+.tab.on{color:var(--blue);border-bottom-color:var(--blue);background:rgba(240,104,120,.18);font-weight:700;animation:tabSlide .3s cubic-bezier(.34,1.56,.64,1);}
 /* 탭 알림 뱃지 */
 
 .tab-badge{position:absolute;top:4px;right:4px;min-width:16px;height:16px;background:#e05060;color:#fff;border-radius:99px;font-size:10px;font-family:'Jua',sans-serif;display:flex;align-items:center;justify-content:center;padding:0 4px;line-height:1;pointer-events:none;border:1.5px solid #fff;animation:badgePulse 1.5s cubic-bezier(.34,1.56,.64,1) infinite;}

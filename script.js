@@ -2400,8 +2400,6 @@ function ytDoSearch(q){
       let html = `<div style="background:#fff;border:2px solid var(--border);border-radius:14px;overflow:hidden;">
         <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:linear-gradient(135deg,#ff0000,#cc0000);">
           <span style="font-size:14px;font-weight:900;color:#fff;font-family:Jua,sans-serif;">📺 "${esc(q)}" 검색 결과</span>
-          <button onclick="window.open('${openUrl}','_blank')"
-            style="padding:4px 12px;font-size:11px;font-family:Jua,sans-serif;background:rgba(255,255,255,.2);color:#fff;border:1.5px solid rgba(255,255,255,.5);border-radius:8px;cursor:pointer;">유튜브 새창</button>
         </div>
         <div style="display:flex;flex-direction:column;gap:0;">`;
       data.items.forEach(item=>{
@@ -2645,7 +2643,7 @@ function renderPlaylists(){
       <div class="pl-card-icon">${p.icon}</div>
       <div class="pl-card-title">${p.title}</div>
       <div class="pl-card-desc">${p.desc}</div>
-      <button class="pl-card-btn" onclick="window.open('https://www.youtube.com/results?search_query='+encodeURIComponent('${p.q.replace(/'/g,"\\'")}'),'_blank')">📺 유튜브에서 보기</button>
+      <button class="pl-card-btn" onclick="ytSearch('${p.q.replace(/'/g,"\\'")}')">📺 보기</button>
     </div>`).join('');
 }
 
@@ -5704,7 +5702,7 @@ const PACMAP=[
 ];
 let PAC={animID:null,score:0,best:0,lives:3,dots:0,totalDots:0,
   pac:{x:10,y:14,dx:1,dy:0,ndx:1,ndy:0,mouth:0.1,mouthDir:1},
-  ghosts:[],cells:[],gameState:'idle',frame:0,moveTimer:0,MOVE_SPEED:10};
+  ghosts:[],cells:[],gameState:'idle',frame:0,moveTimer:0,MOVE_SPEED:16};
 
 function openPacman(){
   let scr=document.getElementById('game-pacman');
