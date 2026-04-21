@@ -302,7 +302,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .tabs::-webkit-scrollbar{display:none;}
 .tab{flex:1;min-width:max-content;padding:clamp(7px,1.4vh,11px) clamp(4px,1vw,8px);font-size:clamp(12px,1.6vw,15px);font-family:'Jua',sans-serif;background:none;border:none;border-bottom:6px solid transparent;color:#f4a0a8;cursor:pointer;transition:all .25s cubic-bezier(.34,.56,.64,.89);margin-bottom:-6px;white-space:nowrap;position:relative;}
 .tab.on{color:var(--blue);border-bottom-color:var(--blue);background:rgba(240,104,120,.13);font-weight:700;animation:tabSlide .3s cubic-bezier(.34,1.56,.64,1);}
-.tab:hover:not(.on){color:var(--blue);background:rgba(240,104,120,.04);}
 /* 탭 알림 뱃지 */
 
 .tab-badge{position:absolute;top:4px;right:4px;min-width:16px;height:16px;background:#e05060;color:#fff;border-radius:99px;font-size:10px;font-family:'Jua',sans-serif;display:flex;align-items:center;justify-content:center;padding:0 4px;line-height:1;pointer-events:none;border:1.5px solid #fff;animation:badgePulse 1.5s cubic-bezier(.34,1.56,.64,1) infinite;}
@@ -1099,7 +1098,7 @@ body.game-open .hd,body.game-open .sbar,body.game-open .tabs,body.game-open .pba
 /* ═══ 미디어 패널 ═══ */
 #panel-media{padding:clamp(8px,1.2vh,12px) clamp(3px,0.5vw,6px) 0;align-items:center;overflow-y:auto;}
 .media-wrap{width:100%;max-width:100%;display:flex;flex-direction:column;gap:clamp(10px,1.6vh,16px);min-height:0;}
-.media-tabs{display:flex;gap:8px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px;}
+.media-tabs{display:flex;gap:8px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px;position:sticky;top:0;z-index:10;background:var(--bg);}
 .media-tabs::-webkit-scrollbar{display:none;}
 .mtab{padding:clamp(7px,1.2vh,11px) clamp(12px,1.8vw,20px);font-size:clamp(11px,1.4vw,14px);
   font-family:'Jua',sans-serif;background:#fff;border:2px solid var(--border);

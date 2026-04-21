@@ -1675,9 +1675,6 @@ function closeGame(id){
   document.body.classList.remove('game-open');
   document.body.style.overflow='';
   const r=document.getElementById(id+'-result');if(r)r.classList.remove('on');
-  // 게임 탭으로 복귀
-  const gi=TABS.indexOf('game');
-  switchTab('game',document.querySelectorAll('.tab')[gi]);
 }
 function showGameResult(id){
   document.getElementById(id+'-result').classList.add('on');
