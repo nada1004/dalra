@@ -1658,23 +1658,25 @@ function openGame(id){
   document.body.classList.add('game-open');
 }
 function closeGame(id){
-  if(id==='tetris') closeTetris();
-  if(id==='minesweeper'){clearInterval(MS&&MS.timerID);document.removeEventListener('keydown',msKey);}
-  if(id==='mole') stopMole&&stopMole();
-  if(id==='snake'){clearInterval(SNAKE&&SNAKE.timerID);document.removeEventListener('keydown',snakeKey);}
-  if(id==='ladder'&&_spellTimer){clearInterval(_spellTimer);}
-  if(id==='spelling'&&_spellTimer){clearInterval(_spellTimer);}
-  if(id==='typing'){cancelAnimationFrame(TYPING&&TYPING.animID);clearInterval(TYPING&&TYPING.interval);}
-  if(id==='pacman'){cancelAnimationFrame(PAC&&PAC.animID);document.removeEventListener('keydown',pacKey);}
-  if(id==='stack'){cancelAnimationFrame(STACK&&STACK.animID);document.removeEventListener('keydown',stackKey);}
-  if(id==='dino'){cancelAnimationFrame(DINO&&DINO.animID);document.removeEventListener('keydown',dinoKey);}
-  if(id==='dodge'){cancelAnimationFrame(DODGE&&DODGE.animID);document.removeEventListener('keydown',dodgeKey);document.removeEventListener('keyup',dodgeKeyUp);}
-  if(id==='simon'){cancelAnimationFrame(SIMON&&SIMON.animID);}
-  const scr=document.getElementById('game-'+id);
-  if(scr){scr.classList.remove('on');scr.style.top='';scr.style.height='';}
-  document.body.classList.remove('game-open');
-  document.body.style.overflow='';
-  const r=document.getElementById(id+'-result');if(r)r.classList.remove('on');
+  try{
+    if(id==='tetris') closeTetris();
+    if(id==='minesweeper'){clearInterval(MS&&MS.timerID);document.removeEventListener('keydown',msKey);}
+    if(id==='mole') stopMole&&stopMole();
+    if(id==='snake'){clearInterval(SNAKE&&SNAKE.timerID);document.removeEventListener('keydown',snakeKey);}
+    if(id==='ladder'&&_spellTimer){clearInterval(_spellTimer);}
+    if(id==='spelling'&&_spellTimer){clearInterval(_spellTimer);}
+    if(id==='typing'){cancelAnimationFrame(TYPING&&TYPING.animID);clearInterval(TYPING&&TYPING.interval);}
+    if(id==='pacman'){cancelAnimationFrame(PAC&&PAC.animID);document.removeEventListener('keydown',pacKey);}
+    if(id==='stack'){cancelAnimationFrame(STACK&&STACK.animID);document.removeEventListener('keydown',stackKey);}
+    if(id==='dino'){cancelAnimationFrame(DINO&&DINO.animID);document.removeEventListener('keydown',dinoKey);}
+    if(id==='dodge'){cancelAnimationFrame(DODGE&&DODGE.animID);document.removeEventListener('keydown',dodgeKey);document.removeEventListener('keyup',dodgeKeyUp);}
+    if(id==='simon'){cancelAnimationFrame(SIMON&&SIMON.animID);}
+    const scr=document.getElementById('game-'+id);
+    if(scr){scr.classList.remove('on');scr.style.top='';scr.style.height='';}
+    document.body.classList.remove('game-open');
+    document.body.style.overflow='';
+    const r=document.getElementById(id+'-result');if(r)r.classList.remove('on');
+  }catch(e){console.error('closeGame error:',e);}
 }
 function showGameResult(id){
   document.getElementById(id+'-result').classList.add('on');
