@@ -772,6 +772,7 @@ function _doSwitchTab(name,btn){
   if(name==='make'){const lo=document.getElementById('make-lock-overlay');if(lo)lo.style.display=adminIsLogged()?'none':'flex';}
   if(name==='school'){noticeRender && noticeRender();ttRender && ttRender();}
   if(name==='study')initStudy && initStudy();
+  if(name==='game') loadGameBests && loadGameBests();
   if(name==='exam'){
     renderQsCats && renderQsCats();
     updateWrongBtn && updateWrongBtn();
@@ -1681,21 +1682,22 @@ function closeGame(id){
 function showGameResult(id){
   document.getElementById(id+'-result').classList.add('on');
   completeMission('game');
-  // 🎮 게임 보너스 → 메인 레벨 점수에 반영
-  let bonus=0;
+  let bonus=0, currentScore=0;
   try{
-    if(id==='tetris')      bonus=Math.round((TET&&TET.score||0)*0.3);
-    else if(id==='minesweeper') bonus=200;
-    else if(id==='mole')   bonus=Math.round((MOLE&&MOLE.score||0)*0.6);
-    else if(id==='snake')  bonus=Math.round((SNAKE&&SNAKE.score||0)*8);
-    else if(id==='breakout')bonus=Math.round((BRKOUT&&BRKOUT.score||0)*0.4);
-    else if(id==='typing') bonus=Math.round((TYPING&&TYPING.score||0)*0.8);
-    else if(id==='pacman') bonus=Math.round((PAC&&PAC.score||0)*0.5);
-    else if(id==='stack')  bonus=Math.round((STACK&&STACK.score||0)*20);
-    else if(id==='dino')   bonus=Math.round((DINO&&DINO.score||0)*0.1);
-    else if(id==='dodge')  bonus=Math.round((DODGE&&DODGE.score||0)*0.5);
-    else if(id==='simon')  bonus=Math.round((SIMON&&SIMON.level||0)*30);
+    if(id==='tetris')      { currentScore=TET?.score||0; bonus=Math.round(currentScore*0.3); }
+    else if(id==='minesweeper') { bonus=200; currentScore=200; }
+    else if(id==='mole')   { currentScore=MOLE?.score||0; bonus=Math.round(currentScore*0.6); }
+    else if(id==='snake')  { currentScore=SNAKE?.score||0; bonus=Math.round(currentScore*8); }
+    else if(id==='breakout'){ currentScore=BRKOUT?.score||0; bonus=Math.round(currentScore*0.4); }
+    else if(id==='typing') { currentScore=TYPING?.score||0; bonus=Math.round(currentScore*0.8); }
+    else if(id==='pacman') { currentScore=PAC?.score||0; bonus=Math.round(currentScore*0.5); }
+    else if(id==='stack')  { currentScore=STACK?.score||0; bonus=Math.round(currentScore*20); }
+    else if(id==='dino')   { currentScore=DINO?.score||0; bonus=Math.round(currentScore*0.1); }
+    else if(id==='dodge')  { currentScore=DODGE?.score||0; bonus=Math.round(currentScore*0.5); }
+    else if(id==='simon')  { currentScore=SIMON?.level||0; bonus=Math.round(currentScore*30); }
   }catch(ex){}
+  const isNewBest=saveGameBest(id,currentScore);
+  if(isNewBest){const card=document.querySelector('#'+id+'-result .gr-card');if(card){const el=document.createElement('div');el.className='gr-newbest';el.textContent='🎉 신기록!';card.insertBefore(el,card.firstChild);}}
   if(bonus>0){
     S.score+=bonus;
     if(typeof updateLevel==='function') updateLevel();
@@ -5597,6 +5599,7 @@ function openTyping(){
 function closeTyping(){cancelAnimationFrame(TYPING.animID);clearInterval(TYPING.interval);closeGame('typing');}
 function typingReset(){
   cancelAnimationFrame(TYPING.animID);clearInterval(TYPING.interval);
+  TYPING.best = lsGet(GAME_BEST_KEY,{})['typing']||0;
   TYPING.words=[];TYPING.score=0;TYPING.lives=3;TYPING.speed=1.2;TYPING.frame=0;TYPING.input='';
   const sc=document.getElementById('typing-score');if(sc)sc.textContent='0';
   const lv=document.getElementById('typing-lives');if(lv)lv.textContent='3';
@@ -5649,7 +5652,7 @@ function typingLoop(){
         document.getElementById('typing-result-score').textContent=TYPING.score+'점';
         document.getElementById('typing-result-sub').textContent='최고기록: '+TYPING.best+'점';
         document.getElementById('typing-result').classList.add('on');
-        if(TYPING.score>=100)showGameResult('typing');
+        showGameResult('typing');
         return false;
       }
       return false;
@@ -5843,6 +5846,7 @@ function pacLoop(){
             document.getElementById('pac-result-title').textContent='💀 게임 오버!';
             document.getElementById('pac-result-score').textContent=PAC.score+'점';
             document.getElementById('pac-result').classList.add('on');
+            setTimeout(()=>showGameResult('pacman'),400);
           } else {
             PAC.pac.x=10;PAC.pac.y=14;PAC.pac.dx=1;PAC.pac.dy=0;
           }
@@ -5964,6 +5968,7 @@ function stackDrop(){
     if(STACK.score>STACK.best)STACK.best=STACK.score;
     document.getElementById('stack-result-score').textContent=STACK.score+'층';
     document.getElementById('stack-result').classList.add('on');
+    showGameResult('stack');
     return;
   }
   // Place block
@@ -6057,6 +6062,7 @@ function dinoJump(){
   if(DINO.dino.onGround){DINO.dino.vy=-14;DINO.dino.onGround=false;}
 }
 function dinoReset(){
+  DINO.best = lsGet(GAME_BEST_KEY,{})['dino']||0;
   DINO.state='idle';DINO.score=0;DINO.obs=[];DINO.frame=0;DINO.speed=4;DINO.spawnTimer=0;
   DINO.dino.vy=0;DINO.dino.onGround=true;
   const sc=document.getElementById('dino-score');if(sc)sc.textContent='0';
@@ -6099,7 +6105,7 @@ function dinoLoop(){
         document.getElementById('dino-result-sub').textContent='최고: '+DINO.best+'점';
         const bst=document.getElementById('dino-best');if(bst)bst.textContent=DINO.best;
         document.getElementById('dino-result').classList.add('on');
-        if(finalScore>=100)showGameResult('dino');
+        showGameResult('dino');
         break;
       }
     }
@@ -6211,6 +6217,7 @@ function dodgeKeyUp(e){
   if(e.key==='ArrowRight'||e.key==='d')DODGE.keys.right=false;
 }
 function dodgeReset(){
+  DODGE.best = lsGet(GAME_BEST_KEY,{})['dodge']||0;
   DODGE.state='idle';DODGE.score=0;DODGE.rocks=[];DODGE.frame=0;DODGE.speed=2.5;DODGE.spawnT=0;
   DODGE.keys={left:false,right:false};DODGE._stars=[];
   DODGE.ship.x=DODGE.W/2-DODGE.ship.w/2;DODGE.ship.y=DODGE.H-60;
@@ -6251,7 +6258,7 @@ function dodgeLoop(){
         document.getElementById('dodge-result-sub').textContent='최고: '+DODGE.best+'점';
         const bst=document.getElementById('dodge-best');if(bst)bst.textContent=DODGE.best;
         document.getElementById('dodge-result').classList.add('on');
-        if(final>=50)showGameResult('dodge');
+        showGameResult('dodge');
         break;
       }
     }
@@ -6355,6 +6362,7 @@ function openSimon(){
 function closeSimon(){cancelAnimationFrame(SIMON.animID);closeGame('simon');}
 function simonSetMsg(m){const el=document.getElementById('simon-msg');if(el)el.textContent=m;}
 function simonStart(){
+  SIMON.best = lsGet(GAME_BEST_KEY,{})['simon']||0;
   const btn=document.getElementById('simon-start-btn');if(btn)btn.style.display='none';
   SIMON.seq=[];SIMON.input=[];SIMON.level=0;
   simonNextRound();
@@ -6405,7 +6413,7 @@ function simonPress(idx){
     setTimeout(()=>{
       document.getElementById('simon-result').classList.add('on');
       const sBtn=document.getElementById('simon-start-btn');if(sBtn)sBtn.style.display='';
-      if(SIMON.level>=10)showGameResult('simon');
+      showGameResult('simon');
     },600);
     return;
   }
