@@ -900,6 +900,12 @@ body.dark-mode #cg-confirm-bg > div{background:#1e1b2e!important;}
 
 
 .gc-btn:hover{transform:translateY(-2px);}
+.gc-meta{display:flex;gap:clamp(8px,1.5vw,14px);justify-content:center;flex-wrap:wrap;font-weight:900;}
+.gc-diff{font-size:clamp(11px,1.4vw,13px);color:#c07080;}
+.gc-time{font-size:clamp(10px,1.3vw,12px);color:#c07080;}
+.gc-best{font-size:clamp(11px,1.4vw,13px);color:var(--orange);font-weight:900;background:rgba(255,170,68,.1);border-radius:99px;padding:3px 12px;margin-top:4px;}
+.gr-newbest{color:#ff6b6b;font-size:clamp(18px,3vw,28px);font-weight:900;animation:newBestIn .6s cubic-bezier(.34,1.56,.64,1);}
+@keyframes newBestIn{0%{transform:scale(0);opacity:0;}100%{transform:scale(1);opacity:1;}}
 .game-screen{display:none;position:fixed;left:0;right:0;bottom:0;top:0;z-index:800;overflow-y:auto;}
 /* 게임화면이 열려도 hd/sbar/tabs는 위에 표시 */
 .hd,.sbar,.tabs,.pbar{position:relative;z-index:860;}

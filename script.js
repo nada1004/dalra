@@ -554,11 +554,35 @@ function esc(str){
 const MAX_RANKING = 10;
 const HOME_RANK_DISPLAY = 5;
 const MAX_COMBO_DISPLAY = 10;
+const GAME_BEST_KEY = 'game_best_v1';
 
 /* ══ 출석 스탬프 ══ */
 const ATT_KEY = 'cgSchoolAttendance';
 const DAY_LABELS = ['월','화','수','목','금','토','일'];
 const STAMPS = ['⭐','🌟','🔥','💎','🏆','🎉','👑'];
+
+/* ══ 게임 최고기록 ══ */
+function updateGameBestDisplay(id, score){
+  const el = document.getElementById('gbest-'+id);
+  if(el) el.textContent = score > 0 ? '최고 '+score : '최고 -';
+}
+function loadGameBests(){
+  const bests = lsGet(GAME_BEST_KEY, {});
+  ['tetris','minesweeper','mole','snake','breakout','typing','pacman','stack','dino','dodge','simon'].forEach(id=>{
+    updateGameBestDisplay(id, bests[id]||0);
+  });
+}
+function saveGameBest(id, score){
+  if(score<=0) return;
+  let bests = lsGet(GAME_BEST_KEY, {});
+  if(score > (bests[id]||0)){
+    bests[id] = score;
+    lsSet(GAME_BEST_KEY, bests);
+    updateGameBestDisplay(id, score);
+    return true; // 신기록
+  }
+  return false;
+}
 
 function attLoad() {
   return lsGetJSON(ATT_KEY, {});
@@ -1666,6 +1690,7 @@ function showGameResult(id){
     else if(id==='snake')  bonus=Math.round((SNAKE&&SNAKE.score||0)*8);
     else if(id==='breakout')bonus=Math.round((BRKOUT&&BRKOUT.score||0)*0.4);
     else if(id==='typing') bonus=Math.round((TYPING&&TYPING.score||0)*0.8);
+    else if(id==='pacman') bonus=Math.round((PAC&&PAC.score||0)*0.5);
     else if(id==='stack')  bonus=Math.round((STACK&&STACK.score||0)*20);
     else if(id==='dino')   bonus=Math.round((DINO&&DINO.score||0)*0.1);
     else if(id==='dodge')  bonus=Math.round((DODGE&&DODGE.score||0)*0.5);
@@ -5797,6 +5822,7 @@ function pacLoop(){
         document.getElementById('pac-result-title').textContent='🎉 클리어!';
         document.getElementById('pac-result-score').textContent=PAC.score+'점';
         document.getElementById('pac-result').classList.add('on');
+        setTimeout(()=>showGameResult('pacman'),400);
       }
       // Move ghosts
       PAC.ghosts.forEach(g=>{
@@ -6302,7 +6328,7 @@ function openSimon(){
       <div id="simon-board" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;width:min(300px,80vw);">
         <div class="simon-btn" id="simon-0" onclick="simonPress(0)" style="background:#e05060;aspect-ratio:1;border-radius:18px;cursor:pointer;transition:filter .1s,transform .1s;border:4px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:clamp(32px,8vw,52px);user-select:none;">🟥</div>
         <div class="simon-btn" id="simon-1" onclick="simonPress(1)" style="background:#34c498;aspect-ratio:1;border-radius:18px;cursor:pointer;transition:filter .1s,transform .1s;border:4px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:clamp(32px,8vw,52px);user-select:none;">🟩</div>
-        <div class="simon-btn" id="simon-2" onclick="simonPress(2)" style="background:#f06878;aspect-ratio:1;border-radius:18px;cursor:pointer;transition:filter .1s,transform .1s;border:4px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:clamp(32px,8vw,52px);user-select:none;">🟦</div>
+        <div class="simon-btn" id="simon-2" onclick="simonPress(2)" style="background:#3b82f6;aspect-ratio:1;border-radius:18px;cursor:pointer;transition:filter .1s,transform .1s;border:4px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:clamp(32px,8vw,52px);user-select:none;">🟦</div>
         <div class="simon-btn" id="simon-3" onclick="simonPress(3)" style="background:#eab308;aspect-ratio:1;border-radius:18px;cursor:pointer;transition:filter .1s,transform .1s;border:4px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:clamp(32px,8vw,52px);user-select:none;">🟨</div>
       </div>
       <button id="simon-start-btn" onclick="simonStart()" style="padding:12px 36px;font-size:clamp(14px,2vw,18px);font-family:Jua,sans-serif;background:linear-gradient(135deg,#a855f7,#7c3aed);color:#fff;border:none;border-radius:14px;cursor:pointer;box-shadow:0 4px 0 #4c1d95;">🎮 게임 시작</button>
