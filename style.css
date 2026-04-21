@@ -675,7 +675,6 @@ body.dark-mode input,body.dark-mode textarea,body.dark-mode select{background:#1
 body.dark-mode .pbar{background:#1e1b2e;}
 body.dark-mode #name-screen{background:linear-gradient(160deg,#1a0a2e,#1e1b2e 50%,#0a1a2e)!important;}
 body.dark-mode .mtab{background:#2a1830;border-color:#4a2040;color:#c090a0;}
-body.dark-mode .mtab:hover{border-color:#48cae4;color:#48cae4;}
 body.dark-mode .mtab.on{background:#48cae4;border-color:#48cae4;color:#1a1a2e;box-shadow:0 3px 10px rgba(72,202,228,.35);}
 /* 다크모드 추가 영역 */
 body.dark-mode .board{background:linear-gradient(160deg,#1a3a2a,#2d4a2d)!important;}
@@ -1103,7 +1102,6 @@ body.game-open .hd,body.game-open .sbar,body.game-open .tabs,body.game-open .pba
 .mtab{padding:clamp(7px,1.2vh,11px) clamp(12px,1.8vw,20px);font-size:clamp(11px,1.4vw,14px);
   font-family:'Jua',sans-serif;background:#fff;border:2px solid var(--border);
   border-radius:99px;color:#c07080;cursor:pointer;transition:all .2s cubic-bezier(.34,1.56,.64,1);}
-.mtab:hover{border-color:var(--blue);color:var(--blue);}
 .mtab.on{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 3px 10px rgba(240,104,120,.35);transform:scale(1.05);font-weight:700;}
 .mpanel{display:none;flex-direction:column;gap:clamp(10px,1.8vh,16px);overflow-y:auto;flex:1;padding:clamp(8px,1.2vh,12px) clamp(3px,0.5vw,6px) 0;}
 .mpanel.on{display:flex;}
