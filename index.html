@@ -1583,7 +1583,7 @@
 <!-- 🧱 테트리스 게임 화면 -->
 <div class="game-screen" id="game-tetris">
   <div class="gs-header" style="background:rgba(255,251,235,.97);backdrop-filter:blur(10px);border-bottom:2px solid rgba(230,160,40,.3);">
-    <button class="gs-back" id="tet-back-btn" onclick="closeGame('tetris'); switchTab('game',null);">← 나가기</button>
+    <button class="gs-back" id="tet-back-btn" onclick="closeGame('tetris')">← 나가기</button>
     <div class="gs-title">🧱 테트리스</div>
     <div class="gs-info" id="tet-level-display">Lv.1</div>
   </div>
@@ -1648,7 +1648,7 @@
     <div class="gr-sub" id="tet-result-sub">레벨 1 · 0줄 제거</div>
     <div class="gr-btns">
       <button class="gr-btn retry" onclick="tetRetry()">🔄 다시 하기</button>
-      <button class="gr-btn home" onclick="closeGame('tetris'); switchTab('game',null);">🏠 허브로</button>
+      <button class="gr-btn home" onclick="closeGame('tetris')">🏠 허브로</button>
     </div>
   </div>
 </div>
@@ -1657,7 +1657,7 @@
 <!-- 💣 지뢰찾기 게임 화면 -->
 <div class="game-screen" id="game-minesweeper">
   <div class="gs-header" style="background:rgba(241,245,249,.97);backdrop-filter:blur(10px);border-bottom:2px solid #e2e8f0;color:var(--navy);">
-    <button class="gs-back" onclick="closeGame('minesweeper'); switchTab('game',null);">← 나가기</button>
+    <button class="gs-back" onclick="closeGame('minesweeper')">← 나가기</button>
     <div class="gs-title">💣 지뢰찾기</div>
     <div class="gs-info" id="ms-status">준비</div>
   </div>
@@ -1673,7 +1673,7 @@
     <div class="gr-sub" id="minesweeper-result-sub"></div>
     <div class="gr-btns">
       <button class="gr-btn retry" onclick="retryMs()">🔄 다시 하기</button>
-      <button class="gr-btn home" onclick="closeGame('minesweeper'); switchTab('game',null);">🏠 허브로</button>
+      <button class="gr-btn home" onclick="closeGame('minesweeper')">🏠 허브로</button>
     </div>
   </div>
 </div>
@@ -1681,7 +1681,7 @@
 <!-- 🎯 두더지 잡기 게임 화면 -->
 <div class="game-screen" id="game-mole">
   <div class="gs-header" style="background:rgba(254,243,199,.97);backdrop-filter:blur(10px);border-bottom:2px solid rgba(180,83,9,.15);color:var(--navy);">
-    <button class="gs-back" onclick="closeGame('mole'); switchTab('game',null);">← 나가기</button>
+    <button class="gs-back" onclick="closeGame('mole')">← 나가기</button>
     <div class="gs-title">🐹 두더지 잡기</div>
     <div class="gs-info" id="mole-time-display">30초</div>
   </div>
@@ -1697,7 +1697,7 @@
     <div class="gr-sub" id="mole-result-sub"></div>
     <div class="gr-btns">
       <button class="gr-btn retry" onclick="retryMole()">🔄 다시 하기</button>
-      <button class="gr-btn home" onclick="closeGame('mole'); switchTab('game',null);">🏠 허브로</button>
+      <button class="gr-btn home" onclick="closeGame('mole')">🏠 허브로</button>
     </div>
   </div>
 </div>

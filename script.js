@@ -1676,6 +1676,7 @@ function closeGame(id){
     document.body.classList.remove('game-open');
     document.body.style.overflow='';
     const r=document.getElementById(id+'-result');if(r)r.classList.remove('on');
+    setTimeout(()=>{switchTab('game',null);},100);
   }catch(e){console.error('closeGame error:',e);}
 }
 function showGameResult(id){
