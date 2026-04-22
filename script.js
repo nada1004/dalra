@@ -6663,33 +6663,37 @@ function convertToQDB(oxQuestions) {
   }));
 }
 
-// 퀴즈 게임 상태
+/* ═══ QDB 퀴즈 시스템 ═══ */
 const QZ = {
-  qdb: [], pool: [], cat: 'all', diff: 'normal', idx: 0,
-  score: 0, correct: 0, total: 0, skips: 0, hints: 0, combo: 0,
-  answers: [], timerRunning: false, taActive: false,
-  taTime: 60, taRemain: 60, solved: 0, taScore: 0,
-  history: [], hintUsed: false
+  pool: [], cat: 'all', diff: 'easy', idx: 0,
+  score: 0, correct: 0, total: 0, combo: 0,
+  answers: [], history: [], hintUsed: false
 };
 
 function initQuiz() {
-  QZ.qdb = convertToQDB(ALL_QS);
+  if (typeof QDB === 'undefined' || !QDB || QDB.length === 0) {
+    console.error('QDB not loaded');
+    return;
+  }
+  QZ.cat = 'all';
+  QZ.diff = 'easy';
   loadQuiz();
 }
 
 function loadQuiz() {
   filterQuestions();
   QZ.idx = 0; QZ.score = 0; QZ.correct = 0; QZ.total = 0;
-  QZ.skips = 0; QZ.hints = 0; QZ.combo = 0; QZ.answers = [];
-  QZ.history = []; QZ.taActive = false; QZ.timerRunning = false;
+  QZ.combo = 0; QZ.answers = [];
+  QZ.history = []; QZ.hintUsed = false;
   updateStats();
   renderBoard();
 }
 
 function filterQuestions() {
-  let filtered = QZ.qdb;
+  let filtered = QDB || [];
   if (QZ.cat !== 'all') filtered = filtered.filter(q => q.c === QZ.cat);
-  QZ.pool = filtered;
+  if (QZ.diff !== 'all') filtered = filtered.filter(q => q.d === QZ.diff);
+  QZ.pool = filtered.sort(() => Math.random() - 0.5);
   QZ.idx = 0;
 }
 
@@ -6697,12 +6701,10 @@ function setCat(cat, btn) {
   const row = document.getElementById('cat-row');
   if (!row) return;
   row.querySelectorAll('.pill').forEach(b => {
-    b.classList.remove('on-all');
     b.style.background = '';
     b.style.color = '';
   });
   if (btn) {
-    btn.classList.add('on-all');
     btn.style.background = 'rgba(240,104,120,.28)';
     btn.style.color = 'var(--blue)';
   }
@@ -6713,14 +6715,11 @@ function setCat(cat, btn) {
 function setDiff(diff, btn) {
   const row = document.getElementById('diff-row');
   if (!row) return;
-  const className = { 'easy': 'on-easy', 'normal': 'on-normal', 'hard': 'on-hard' }[diff];
   row.querySelectorAll('.pill').forEach(b => {
-    b.classList.remove('on-easy', 'on-normal', 'on-hard');
     b.style.background = '';
     b.style.color = '';
   });
   if (btn) {
-    btn.classList.add(className);
     btn.style.background = 'rgba(240,104,120,.28)';
     btn.style.color = 'var(--blue)';
   }
@@ -6740,89 +6739,71 @@ function renderBoard() {
     return;
   }
   const q = QZ.pool[QZ.idx];
-  const catEmoji = { 'korean': '📖', 'math': '🔢', 'history': '🏛', 'science': '🔬' }[q.c] || '📚';
-  const ansOptions = ['O (맞다)', 'X (틀리다)'];
-  const correctIdx = q.a === 'O' ? 0 : 1;
+  const catEmoji = { 'korean': '📖', 'math': '🔢', 'history': '🏛', 'science': '🔬', 'sports': '⚽', 'kpop': '🎤', 'general': '🧠', 'nonsense': '😂' }[q.c] || '📚';
 
   board.innerHTML = `
-    <div style="display:flex;flex-direction:column;gap:16px;padding:16px;">
+    <div style="display:flex;flex-direction:column;gap:16px;padding:16px;width:100%;">
       <div style="text-align:center;">
-        <div style="font-size:11px;color:#999;margin-bottom:4px;">${catEmoji} 문제 ${QZ.total + 1}</div>
-        <div style="font-size:16px;font-family:'Jua';font-weight:700;line-height:1.5;">${esc(q.q)}</div>
+        <div style="font-size:13px;color:#999;margin-bottom:8px;">${catEmoji} 문제 ${QZ.idx + 1}/${QZ.pool.length}</div>
+        <div style="font-size:18px;font-family:'Jua';font-weight:700;line-height:1.6;color:#333;margin-bottom:16px;">${esc(q.q)}</div>
       </div>
-      <div style="display:flex;flex-direction:column;gap:8px;">
-        ${ansOptions.map((ans, i) => `
-          <button class="ans-btn" onclick="selectAnswer(${i}, ${correctIdx})"
-            style="padding:14px;background:#fff;border:2px solid #e0e0e0;border-radius:12px;cursor:pointer;font-size:15px;font-family:'Jua';transition:all .2s;font-weight:700;">
-            ${i === 0 ? '⭕' : '❌'} ${ans}
-          </button>
-        `).join('')}
-      </div>
-      <div style="display:flex;gap:8px;">
-        <button class="hint-btn" onclick="useHint()" style="flex:1;padding:10px;background:#fff3cd;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-family:'Jua';font-weight:700;">💡 힌트</button>
-        <button class="skip-btn" onclick="skipQuestion()" style="flex:1;padding:10px;background:#e0e0e0;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-family:'Jua';font-weight:700;">⏭ 넘기기</button>
+      <div style="display:flex;flex-direction:column;gap:10px;flex:1;">
+        <input type="text" id="answer-input" placeholder="정답을 입력하세요" style="padding:12px;font-size:15px;font-family:'Jua';border:2px solid #e0e0e0;border-radius:12px;outline:none;" onkeypress="if(event.key==='Enter') submitAnswer()"/>
+        <div style="display:flex;gap:8px;">
+          <button onclick="submitAnswer()" style="flex:1;padding:12px;background:linear-gradient(135deg,#f06878,#e04858);color:#fff;border:none;border-radius:12px;cursor:pointer;font-size:14px;font-family:'Jua';font-weight:700;">제출</button>
+          <button onclick="useHint()" style="flex:1;padding:12px;background:#fff3cd;color:#856404;border:none;border-radius:12px;cursor:pointer;font-size:14px;font-family:'Jua';font-weight:700;">💡 힌트</button>
+          <button onclick="skipQuestion()" style="flex:1;padding:12px;background:#e0e0e0;color:#333;border:none;border-radius:12px;cursor:pointer;font-size:14px;font-family:'Jua';font-weight:700;">⏭ 넘기기</button>
+        </div>
       </div>
     </div>
   `;
-  updateProgress();
+  setTimeout(() => {
+    const inp = document.getElementById('answer-input');
+    if (inp) inp.focus();
+  }, 100);
 }
 
-function selectAnswer(selectedIdx, correctIdx) {
+function submitAnswer() {
+  const inp = document.getElementById('answer-input');
+  if (!inp) return;
+  const selected = inp.value.trim();
+  if (!selected) {
+    showToast('정답을 입력하세요');
+    return;
+  }
   const q = QZ.pool[QZ.idx];
-  const isCorrect = selectedIdx === correctIdx;
+  const isCorrect = selected.toLowerCase() === q.a.toLowerCase();
   QZ.total++;
   if (isCorrect) {
     QZ.correct++; QZ.combo++;
-    const points = Math.max(10, 100 - QZ.combo * 2);
+    const points = Math.max(10, 100 - QZ.combo * 5);
     QZ.score += points;
+    showToast('정답입니다! (+' + points + '점)');
   } else {
     QZ.combo = 0;
+    showToast('오답입니다. 정답: ' + q.a);
   }
-  QZ.answers.push({
-    q: q.q,
-    selected: selectedIdx === 0 ? 'O' : 'X',
-    correct: q.a,
-    isCorrect
-  });
-  QZ.history.push({ cat: q.c, correct: isCorrect, ans: q.a });
+  QZ.answers.push({ q: q.q, selected, correct: q.a, isCorrect });
+  QZ.history.push({ cat: q.c, correct: isCorrect });
 
-  const btns = document.querySelectorAll('.ans-btn');
-  btns.forEach((btn, i) => {
-    btn.disabled = true;
-    btn.style.pointerEvents = 'none';
-    if (i === correctIdx) {
-      btn.style.background = '#d4edda';
-      btn.style.borderColor = '#28a745';
-    }
-    if (i === selectedIdx && !isCorrect) {
-      btn.style.background = '#f8d7da';
-      btn.style.borderColor = '#f06868';
-    }
-  });
-  document.querySelector('.hint-btn').disabled = true;
-  document.querySelector('.skip-btn').disabled = true;
-
+  inp.disabled = true;
   setTimeout(() => {
     QZ.idx++;
     QZ.hintUsed = false;
     updateStats();
     renderBoard();
-  }, 1000);
+  }, 1500);
 }
 
 function useHint() {
   if (QZ.hintUsed) return;
   QZ.hintUsed = true;
-  QZ.hints++;
   const q = QZ.pool[QZ.idx];
   const hint = q.h || '문제를 다시 읽어보세요';
-  alert('💡 힌트: ' + hint);
-  document.querySelector('.hint-btn').disabled = true;
-  updateStats();
+  showToast('💡 ' + hint);
 }
 
 function skipQuestion() {
-  QZ.skips++;
   QZ.combo = 0;
   QZ.idx++;
   QZ.hintUsed = false;
@@ -6831,197 +6812,35 @@ function skipQuestion() {
 }
 
 function updateStats() {
-  const sc = document.getElementById('sc');
-  const sv = document.getElementById('sv');
-  const tot = document.getElementById('tot');
-  const sk = document.getElementById('sk-stat');
-  const hc = document.getElementById('hc');
-  const cb = document.getElementById('cb');
+  const scoreEl = document.getElementById('score-display');
+  const correctEl = document.getElementById('correct-display');
+  const totalEl = document.getElementById('total-display');
+  const comboEl = document.getElementById('combo-display');
 
-  if (sc) sc.textContent = QZ.score;
-  if (sv) sv.textContent = QZ.correct;
-  if (tot) tot.textContent = QZ.total;
-  if (sk) sk.textContent = QZ.skips;
-  if (hc) hc.textContent = QZ.hints;
-  if (cb) cb.textContent = QZ.combo;
-}
-
-function updateProgress() {
-  const prog = document.getElementById('prog');
-  if (!prog) return;
-  const pct = QZ.pool.length > 0 ? ((QZ.idx / QZ.pool.length) * 100) : 0;
-  prog.style.width = pct + '%';
-}
-
-let timerInterval = null;
-function toggleTimer() {
-  const tbox = document.getElementById('tbox');
-  if (!tbox) return;
-  QZ.timerRunning = !QZ.timerRunning;
-  if (QZ.timerRunning) {
-    let secs = 0;
-    timerInterval = setInterval(() => {
-      secs++;
-      const m = Math.floor(secs / 60);
-      const s = secs % 60;
-      tbox.textContent = '⏱ ' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
-    }, 1000);
-  } else {
-    if (timerInterval) clearInterval(timerInterval);
-  }
-}
-
-function toggleTA() {
-  QZ.taActive = !QZ.taActive;
-  const panel = document.getElementById('ta-panel');
-  const btn = document.getElementById('tabtn');
-  if (QZ.taActive) {
-    if (panel) panel.style.display = 'block';
-    if (btn) btn.style.background = 'rgba(240,104,120,.28)';
-    startTA();
-  } else {
-    if (panel) panel.style.display = 'none';
-    if (btn) btn.style.background = '';
-    stopTA();
-  }
-}
-
-function cycleTATime() {
-  const times = [30, 60, 120];
-  const idx = times.indexOf(QZ.taTime);
-  QZ.taTime = times[(idx + 1) % times.length];
-  QZ.taRemain = QZ.taTime;
-  const val = document.getElementById('ta-time');
-  if (val) val.textContent = QZ.taTime + '초';
-}
-
-let taInterval = null;
-function startTA() {
-  QZ.taRemain = QZ.taTime;
-  QZ.solved = 0;
-  QZ.taScore = 0;
-  taInterval = setInterval(() => {
-    QZ.taRemain--;
-    updateTABar();
-    if (QZ.taRemain <= 0) {
-      stopTA();
-      showTAResult();
-    }
-  }, 1000);
-}
-
-function stopTA() {
-  if (taInterval) clearInterval(taInterval);
-}
-
-function updateTABar() {
-  const bar = document.getElementById('ta-bar');
-  const val = document.getElementById('ta-time');
-  if (bar) {
-    const pct = (QZ.taRemain / QZ.taTime) * 100;
-    bar.style.width = pct + '%';
-  }
-  if (val) {
-    const s = QZ.taRemain;
-    val.textContent = s + '초';
-  }
-  const solved = document.getElementById('ta-solved');
-  const score = document.getElementById('ta-score');
-  if (solved) solved.textContent = QZ.solved;
-  if (score) score.textContent = QZ.taScore;
+  if (scoreEl) scoreEl.textContent = QZ.score;
+  if (correctEl) correctEl.textContent = QZ.correct;
+  if (totalEl) totalEl.textContent = QZ.total;
+  if (comboEl) comboEl.textContent = QZ.combo;
 }
 
 function showWin() {
   const modal = document.getElementById('win-bg');
   if (!modal) return;
 
-  const score = document.getElementById('w-score');
-  const hc = document.getElementById('w-hc');
-  const mc = document.getElementById('w-mc');
-  const skip = document.getElementById('w-skip');
-  const items = document.getElementById('w-items');
+  const rate = QZ.total > 0 ? Math.round((QZ.correct / QZ.total) * 100) : 0;
 
-  if (score) score.textContent = QZ.score + '점';
-  if (hc) hc.textContent = QZ.hints;
-  if (mc) mc.textContent = QZ.combo;
-  if (skip) skip.textContent = QZ.skips + '문제';
+  const scoreEl = document.getElementById('win-score');
+  const rateEl = document.getElementById('win-rate');
 
-  if (items) {
-    items.innerHTML = QZ.answers.map(ans => `
-      <div class="w-item ${ans.isCorrect ? 'correct' : 'wrong'}">
-        <div class="w-item-q">${esc(ans.q)}</div>
-        <div class="w-item-ans">정답: ${ans.correct} / 선택: ${ans.selected}</div>
-      </div>
-    `).join('');
-  }
+  if (scoreEl) scoreEl.textContent = QZ.score;
+  if (rateEl) rateEl.textContent = rate;
 
-  modal.classList.add('on');
-}
-
-function showTAResult() {
-  const modal = document.getElementById('ta-bg');
-  if (!modal) return;
-
-  const solved = document.getElementById('ta-result-solved');
-  const score = document.getElementById('ta-result-score');
-
-  if (solved) solved.textContent = QZ.solved;
-  if (score) score.textContent = QZ.taScore;
-
-  modal.classList.add('on');
-}
-
-function closeTAResult(reset) {
-  const modal = document.getElementById('ta-bg');
-  if (modal) modal.classList.remove('on');
-  if (reset) {
-    stopTA();
-    QZ.taActive = false;
-  }
+  modal.style.display = 'flex';
 }
 
 function closeModal() {
   const modal = document.getElementById('win-bg');
-  if (modal) modal.classList.remove('on');
-}
-
-function closeReport() {
-  const modal = document.getElementById('rpt-bg');
-  if (modal) modal.classList.remove('on');
-}
-
-function showReport() {
-  const modal = document.getElementById('rpt-bg');
-  if (!modal) return;
-
-  const cats = [...new Set(QZ.history.map(h => h.cat))];
-  const catStats = cats.map(c => {
-    const h = QZ.history.filter(x => x.cat === c);
-    const correct = h.filter(x => x.correct).length;
-    return {
-      cat: c,
-      correct,
-      total: h.length,
-      rate: h.length > 0 ? Math.round(correct / h.length * 100) : 0
-    };
-  });
-
-  const catEmoji = { 'korean': '📖', 'math': '🔢', 'history': '🏛', 'science': '🔬' };
-  const rptBody = document.getElementById('rpt-body');
-
-  if (rptBody) {
-    rptBody.innerHTML = catStats.map(s => `
-      <div class="rpt-cat">
-        <div class="rpt-cat-name">${catEmoji[s.cat] || '📚'} ${s.cat}</div>
-        <div class="rpt-cat-stat">
-          <span>정답: ${s.correct}/${s.total}</span>
-          <span>성공률: ${s.rate}%</span>
-        </div>
-      </div>
-    `).join('');
-  }
-
-  modal.classList.add('on');
+  if (modal) modal.style.display = 'none';
 }
 
 function newGame() {
@@ -7055,31 +6874,7 @@ const STUDY_CHAT_POOL = {
 };
 
 function initStudyGame() {
-  STUDY.canvas = document.getElementById('gameCanvas');
-  STUDY.ctx = STUDY.canvas.getContext('2d');
-  if (!STUDY.canvas) return;
-
-  STUDY.gameActive = true;
-  STUDY.score = 0;
-  STUDY.timeLeft = 180;
-  STUDY.combo = 0;
-  STUDY.grid = [];
-
-  for (let r = 0; r < STUDY.ROWS; r++) {
-    STUDY.grid[r] = [];
-    for (let c = 0; c < STUDY.COLS; c++) {
-      STUDY.grid[r][c] = { val: Math.floor(Math.random() * 9) + 1, isGold: Math.random() < 0.05 };
-    }
-  }
-
-  studySetMission();
-  studyStartTimer();
-
-  STUDY.canvas.addEventListener('mousedown', studyMouseDown);
-  STUDY.canvas.addEventListener('mousemove', studyMouseMove);
-  window.addEventListener('mouseup', studyMouseUp);
-
-  studyLoop();
+  initQuiz();
 }
 
 function studySetMission() {
