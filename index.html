@@ -864,6 +864,15 @@
             <div class="gc-desc">색깔 순서를 기억해서<br>따라 누르세요!</div>
             <button class="gc-btn">🎨 시작하기</button>
           </div>
+          <div class="game-card boggle" onclick="openBoggle()">
+            <div class="gc-tip">🖱 글자 드래그로 단어 만들기!<br>3글자 이상, 시간 안에 최대한!</div>
+            <div class="gc-icon">🔤</div>
+            <div class="gc-title">보글보글</div>
+            <div class="gc-meta"><span class="gc-diff">⭐⭐☆</span><span class="gc-time">⏱ 3분</span></div>
+            <div class="gc-best" id="gbest-boggle">최고 -</div>
+            <div class="gc-desc">격자에서 단어를 찾아라!<br>드래그로 단어를 만들어요!</div>
+            <button class="gc-btn">🔤 시작하기</button>
+          </div>
           <div class="game-card tententen" onclick="openTenTen()">
             <div class="gc-tip">🖱 드래그로 10 만들기<br>정확한 선택이 수익! 💰</div>
             <div class="gc-icon">🧮</div>
@@ -1631,6 +1640,28 @@
 
 
 
+
+<div class="game-screen" id="game-boggle">
+  <div class="gs-header">
+    <button class="gs-back" onclick="closeGame('boggle')">← 나가기</button>
+    <div class="gs-title">🔤 보글보글</div>
+    <div class="gs-info" id="boggle-timer">3:00</div>
+  </div>
+  <div class="gs-body" id="boggle-body"></div>
+</div>
+
+<div class="game-result" id="boggle-result">
+  <div class="gr-card">
+    <div class="gr-icon">🔤</div>
+    <div class="gr-title">시간 종료!</div>
+    <div class="gr-score" id="boggle-result-score">0점</div>
+    <div class="gr-sub" id="boggle-result-sub">단어 0개 발견</div>
+    <div class="gr-btns">
+      <button class="gr-btn retry" onclick="retryBoggle()">🔄 다시 하기</button>
+      <button class="gr-btn home" onclick="closeGame('boggle')">🏠 허브로</button>
+    </div>
+  </div>
+</div>
 
 <!-- 성적표 오버레이 -->
 <div class="ov" id="ov">
