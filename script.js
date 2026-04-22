@@ -6302,7 +6302,9 @@ function convertToQDB(oxQuestions) {
 const QZ = {
   pool: [], cat: 'all', diff: 'hard', idx: 0,
   score: 0, correct: 0, total: 0, combo: 0,
-  answers: [], history: [], hintUsed: false
+  answers: [], history: [], hintUsed: false,
+  gridMode: true, cardsPerPage: 6, pageIdx: 0,
+  submittedCards: {}, cardResults: {}, cardHintUsed: {}
 };
 
 function initQuiz() {
@@ -6320,6 +6322,10 @@ function loadQuiz() {
   QZ.idx = 0; QZ.score = 0; QZ.correct = 0; QZ.total = 0;
   QZ.combo = 0; QZ.answers = [];
   QZ.history = []; QZ.hintUsed = false;
+  QZ.pageIdx = 0;
+  QZ.submittedCards = {};
+  QZ.cardResults = {};
+  QZ.cardHintUsed = {};
   updateStats();
   renderBoard();
 }
@@ -6356,81 +6362,208 @@ function renderBoard() {
     board.innerHTML = '<div style="text-align:center;padding:40px;color:#999;font-family:\'Jua\';">문제가 없습니다</div>';
     return;
   }
-  if (QZ.idx >= QZ.pool.length) {
-    showWin();
-    return;
-  }
-  const q = QZ.pool[QZ.idx];
-  const catEmoji = { 'korean': '📖', 'math': '🔢', 'history': '🏛', 'science': '🔬', 'sports': '⚽', 'kpop': '🎤', 'general': '🧠', 'nonsense': '😂' }[q.c] || '📚';
-  const catLabel = { 'korean': '국어', 'math': '수학', 'history': '역사', 'science': '과학', 'sports': '스포츠', 'kpop': '연예', 'general': '상식', 'nonsense': '넌센스' }[q.c] || '전체';
 
-  board.innerHTML = `
-    <div class="sb-header">
-      <span class="sb-cat">${catEmoji} ${catLabel}</span>
-      <span class="sb-num">${QZ.idx+1} / ${QZ.pool.length}</span>
-    </div>
-    <div class="sb-question">${esc(q.q)}</div>
-    ${q.h ? `<div class="sb-hint-box" id="hint-box" style="display:none">💡 ${q.h}</div>` : ''}
-    <div style="flex:1;"></div>
-    <div class="sb-input-wrap">
-      <input class="sb-input" id="answer-input" type="text"
-        placeholder="정답을 입력하세요"
-        onkeypress="if(event.key==='Enter')submitAnswer()"
-        autocomplete="off" />
-    </div>
-    <div class="sb-btns">
-      <button class="sb-btn-submit" onclick="submitAnswer()">✅ 제출</button>
-      ${q.h ? `<button class="sb-btn-hint" onclick="useHint()">💡 힌트</button>` : ''}
-      <button class="sb-btn-skip" onclick="skipQuestion()">⏭ 넘기기</button>
+  const catEmoji = { 'korean': '📖', 'math': '🔢', 'history': '🏛', 'science': '🔬', 'sports': '⚽', 'kpop': '🎤', 'general': '🧠', 'nonsense': '😂' };
+  const catLabel = { 'korean': '국어', 'math': '수학', 'history': '역사', 'science': '과학', 'sports': '스포츠', 'kpop': '연예', 'general': '상식', 'nonsense': '넌센스' };
+
+  const startIdx = QZ.pageIdx * QZ.cardsPerPage;
+  const endIdx = Math.min(startIdx + QZ.cardsPerPage, QZ.pool.length);
+  const cardsInPage = QZ.pool.slice(startIdx, endIdx);
+
+  const allSubmitted = cardsInPage.every((_, i) => QZ.submittedCards[startIdx + i]);
+
+  let html = '<div class="sb-grid-container">';
+
+  cardsInPage.forEach((q, cardIdx) => {
+    const poolIdx = startIdx + cardIdx;
+    const isSubmitted = QZ.submittedCards[poolIdx];
+    const result = QZ.cardResults[poolIdx];
+    const cEmoji = catEmoji[q.c] || '📚';
+    const cLabel = catLabel[q.c] || '전체';
+    const cardClass = isSubmitted ? (result?.isCorrect ? 'correct' : 'wrong') : '';
+
+    html += `
+      <div class="sb-grid-card ${cardClass}" id="card-${cardIdx}">
+        <div class="sb-card-header">
+          <span class="sb-card-num">${poolIdx + 1}</span>
+          <span class="sb-card-cat">${cEmoji} ${cLabel}</span>
+        </div>
+        <div class="sb-card-body">
+          <div class="sb-card-question">${esc(q.q)}</div>
+        </div>
+        <div class="sb-card-input-area">
+          <input class="sb-card-input" id="answer-input-${cardIdx}" type="text"
+            placeholder="정답"
+            onkeypress="if(event.key==='Enter')submitAnswer(${cardIdx})"
+            autocomplete="off"
+            ${isSubmitted ? 'disabled' : ''} />
+        </div>
+        <div class="sb-card-feedback" id="feedback-${cardIdx}" style="display:${isSubmitted ? 'block' : 'none'};"></div>
+        <div class="sb-card-buttons">
+          <button class="sb-card-btn-submit" onclick="submitAnswer(${cardIdx})" ${isSubmitted ? 'disabled' : ''}>제출</button>
+          ${q.h ? `<button class="sb-card-btn-hint" onclick="useHint(${cardIdx})" ${QZ.cardHintUsed[poolIdx] ? 'disabled' : ''}>💡</button>` : ''}
+          <button class="sb-card-btn-skip" onclick="skipCard(${cardIdx})" ${isSubmitted ? 'disabled' : ''}>⏭</button>
+        </div>
+      </div>
+    `;
+  });
+
+  html += '</div>';
+
+  html += `
+    <div class="sb-pagination-wrap">
+      <div class="sb-pagination-info">
+        <span id="pagination-text">${startIdx + 1}-${endIdx} / ${QZ.pool.length}</span>
+      </div>
+      <button class="sb-pagination-next" id="next-page-btn" onclick="nextPage()" ${!allSubmitted ? 'disabled' : ''}>
+        ${endIdx >= QZ.pool.length ? '완료 🎉' : '다음 6문제 →'}
+      </button>
     </div>
   `;
-  setTimeout(() => document.getElementById('answer-input')?.focus(), 50);
+
+  board.innerHTML = html;
 }
 
-function submitAnswer() {
-  const inp = document.getElementById('answer-input');
+function submitAnswer(cardIdx) {
+  const startIdx = QZ.pageIdx * QZ.cardsPerPage;
+  const poolIdx = startIdx + cardIdx;
+
+  if (poolIdx >= QZ.pool.length) return;
+  if (QZ.submittedCards[poolIdx]) return;
+
+  const inp = document.getElementById(`answer-input-${cardIdx}`);
   if (!inp) return;
+
   const selected = inp.value.trim();
   if (!selected) {
     showToast('정답을 입력하세요');
     return;
   }
-  const q = QZ.pool[QZ.idx];
+
+  const q = QZ.pool[poolIdx];
   const isCorrect = selected.toLowerCase() === q.a.toLowerCase();
+
   QZ.total++;
   if (isCorrect) {
-    QZ.correct++; QZ.combo++;
+    QZ.correct++;
+    QZ.combo++;
     const points = Math.max(10, 100 - QZ.combo * 5);
     QZ.score += points;
-    showToast('정답입니다! (+' + points + '점)');
+    showToast('정답! (+' + points + '점)');
   } else {
     QZ.combo = 0;
-    showToast('오답입니다. 정답: ' + q.a);
+    showToast('오답. 정답: ' + q.a);
   }
+
   QZ.answers.push({ q: q.q, selected, correct: q.a, isCorrect });
   QZ.history.push({ cat: q.c, correct: isCorrect });
 
+  QZ.submittedCards[poolIdx] = true;
+  QZ.cardResults[poolIdx] = { isCorrect, answer: q.a, selected };
+
   inp.disabled = true;
-  setTimeout(() => {
-    QZ.idx++;
-    QZ.hintUsed = false;
-    updateStats();
-    renderBoard();
-  }, 1500);
-}
+  const card = document.getElementById(`card-${cardIdx}`);
+  const feedback = document.getElementById(`feedback-${cardIdx}`);
 
-function useHint() {
-  if (QZ.hintUsed) return;
-  QZ.hintUsed = true;
-  const hintBox = document.getElementById('hint-box');
-  if (hintBox) hintBox.style.display = 'block';
-}
+  if (card) {
+    card.classList.add(isCorrect ? 'correct' : 'wrong');
+  }
 
-function skipQuestion() {
-  QZ.combo = 0;
-  QZ.idx++;
-  QZ.hintUsed = false;
+  if (feedback) {
+    feedback.textContent = isCorrect ? '✅ 정답!' : '❌ 오답';
+    feedback.className = `sb-card-feedback ${isCorrect ? 'correct' : 'wrong'}`;
+    feedback.style.display = 'block';
+  }
+
   updateStats();
+
+  setTimeout(() => {
+    const endIdx = Math.min(startIdx + QZ.cardsPerPage, QZ.pool.length);
+    const allSubmitted = Array.from(
+      { length: endIdx - startIdx },
+      (_, i) => QZ.submittedCards[startIdx + i]
+    ).every(s => s);
+
+    const nextBtn = document.getElementById('next-page-btn');
+    if (nextBtn) {
+      nextBtn.disabled = !allSubmitted;
+    }
+  }, 500);
+}
+
+function useHint(cardIdx) {
+  const startIdx = QZ.pageIdx * QZ.cardsPerPage;
+  const poolIdx = startIdx + cardIdx;
+
+  if (poolIdx >= QZ.pool.length) return;
+  if (QZ.cardHintUsed[poolIdx]) return;
+
+  const q = QZ.pool[poolIdx];
+  if (!q.h) return;
+
+  QZ.cardHintUsed[poolIdx] = true;
+  showToast('💡 ' + q.h);
+
+  const hintBtn = document.querySelector(`#card-${cardIdx} .sb-card-btn-hint`);
+  if (hintBtn) {
+    hintBtn.disabled = true;
+    hintBtn.style.opacity = '0.5';
+  }
+}
+
+function skipCard(cardIdx) {
+  const startIdx = QZ.pageIdx * QZ.cardsPerPage;
+  const poolIdx = startIdx + cardIdx;
+
+  if (poolIdx >= QZ.pool.length) return;
+  if (QZ.submittedCards[poolIdx]) return;
+
+  QZ.combo = 0;
+  QZ.submittedCards[poolIdx] = true;
+  QZ.cardResults[poolIdx] = { skipped: true };
+
+  const inp = document.getElementById(`answer-input-${cardIdx}`);
+  if (inp) {
+    inp.disabled = true;
+    inp.style.opacity = '0.4';
+  }
+
+  const card = document.getElementById(`card-${cardIdx}`);
+  if (card) {
+    card.style.opacity = '0.6';
+  }
+
+  updateStats();
+
+  const endIdx = Math.min(startIdx + QZ.cardsPerPage, QZ.pool.length);
+  const allProcessed = Array.from(
+    { length: endIdx - startIdx },
+    (_, i) => QZ.submittedCards[startIdx + i]
+  ).every(s => s);
+
+  const nextBtn = document.getElementById('next-page-btn');
+  if (nextBtn) {
+    nextBtn.disabled = !allProcessed;
+  }
+}
+
+function nextPage() {
+  const startIdx = QZ.pageIdx * QZ.cardsPerPage;
+  const endIdx = Math.min(startIdx + QZ.cardsPerPage, QZ.pool.length);
+
+  const allProcessed = Array.from(
+    { length: endIdx - startIdx },
+    (_, i) => QZ.submittedCards[startIdx + i]
+  ).every(s => s);
+
+  if (!allProcessed) return;
+
+  if (endIdx >= QZ.pool.length) {
+    showWin();
+    return;
+  }
+
+  QZ.pageIdx++;
   renderBoard();
 }
 
@@ -6447,11 +6580,18 @@ function updateStats() {
   if (totalEl) totalEl.textContent = QZ.total;
   if (comboEl) comboEl.textContent = QZ.combo;
 
-  // 진행도 업데이트
   if (QZ.pool.length > 0) {
-    const progress = Math.round((QZ.idx / QZ.pool.length) * 100);
+    const totalSubmitted = Object.keys(QZ.submittedCards).length;
+    const progress = Math.round((totalSubmitted / QZ.pool.length) * 100);
     if (progressBar) progressBar.style.width = progress + '%';
     if (progressText) progressText.textContent = progress;
+  }
+
+  const startIdx = QZ.pageIdx * QZ.cardsPerPage;
+  const endIdx = Math.min(startIdx + QZ.cardsPerPage, QZ.pool.length);
+  const paginationText = document.getElementById('pagination-text');
+  if (paginationText) {
+    paginationText.textContent = `${startIdx + 1}-${endIdx} / ${QZ.pool.length}`;
   }
 }
 
