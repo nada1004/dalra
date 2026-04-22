@@ -6620,4 +6620,389 @@ function soopVoteRender() {
   }).join('');
 }
 
-/* switchMedia 시 soopFavInit 연동 */
+/* ═══════════════════════════════════════════════════════════════
+   공부하기 - 퀴즈 게임 시스템
+   OX 데이터를 객관식으로 변환하여 게임 제공
+   ═══════════════════════════════════════════════════════════════ */
+
+// 카테고리 매핑
+const CAT_MAP = {
+  '📖국어': 'korean',
+  '🔢수학': 'math',
+  '🏛역사': 'history',
+  '🔬과학': 'science'
+};
+
+// OX 데이터 → QDB 포맷 변환
+function convertToQDB(oxQuestions) {
+  return oxQuestions.map(([q, ans, cat]) => ({
+    c: CAT_MAP[cat] || 'science',
+    d: 'normal',
+    t: 30,
+    q: q,
+    a: ans ? 'O' : 'X',
+    h: ''
+  }));
+}
+
+// 퀴즈 게임 상태
+const QZ = {
+  qdb: [], pool: [], cat: 'all', diff: 'normal', idx: 0,
+  score: 0, correct: 0, total: 0, skips: 0, hints: 0, combo: 0,
+  answers: [], timerRunning: false, taActive: false,
+  taTime: 60, taRemain: 60, solved: 0, taScore: 0,
+  history: [], hintUsed: false
+};
+
+function initQuiz() {
+  QZ.qdb = convertToQDB(ALL_QS);
+  loadQuiz();
+}
+
+function loadQuiz() {
+  filterQuestions();
+  QZ.idx = 0; QZ.score = 0; QZ.correct = 0; QZ.total = 0;
+  QZ.skips = 0; QZ.hints = 0; QZ.combo = 0; QZ.answers = [];
+  QZ.history = []; QZ.taActive = false; QZ.timerRunning = false;
+  updateStats();
+  renderBoard();
+}
+
+function filterQuestions() {
+  let filtered = QZ.qdb;
+  if (QZ.cat !== 'all') filtered = filtered.filter(q => q.c === QZ.cat);
+  QZ.pool = filtered;
+  QZ.idx = 0;
+}
+
+function setCat(cat, btn) {
+  const row = document.getElementById('cat-row');
+  if (!row) return;
+  row.querySelectorAll('.pill').forEach(b => {
+    b.classList.remove('on-all');
+    b.style.background = '';
+    b.style.color = '';
+  });
+  if (btn) {
+    btn.classList.add('on-all');
+    btn.style.background = 'rgba(240,104,120,.28)';
+    btn.style.color = 'var(--blue)';
+  }
+  QZ.cat = cat;
+  loadQuiz();
+}
+
+function setDiff(diff, btn) {
+  const row = document.getElementById('diff-row');
+  if (!row) return;
+  const className = { 'easy': 'on-easy', 'normal': 'on-normal', 'hard': 'on-hard' }[diff];
+  row.querySelectorAll('.pill').forEach(b => {
+    b.classList.remove('on-easy', 'on-normal', 'on-hard');
+    b.style.background = '';
+    b.style.color = '';
+  });
+  if (btn) {
+    btn.classList.add(className);
+    btn.style.background = 'rgba(240,104,120,.28)';
+    btn.style.color = 'var(--blue)';
+  }
+  QZ.diff = diff;
+  loadQuiz();
+}
+
+function renderBoard() {
+  const board = document.getElementById('board');
+  if (!board) return;
+  if (QZ.pool.length === 0) {
+    board.innerHTML = '<div style="text-align:center;padding:40px;color:#999;">문제가 없습니다</div>';
+    return;
+  }
+  if (QZ.idx >= QZ.pool.length) {
+    showWin();
+    return;
+  }
+  const q = QZ.pool[QZ.idx];
+  const catEmoji = { 'korean': '📖', 'math': '🔢', 'history': '🏛', 'science': '🔬' }[q.c] || '📚';
+  const ansOptions = ['O (맞다)', 'X (틀리다)'];
+  const correctIdx = q.a === 'O' ? 0 : 1;
+
+  board.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:16px;padding:16px;">
+      <div style="text-align:center;">
+        <div style="font-size:11px;color:#999;margin-bottom:4px;">${catEmoji} 문제 ${QZ.total + 1}</div>
+        <div style="font-size:16px;font-family:'Jua';font-weight:700;line-height:1.5;">${esc(q.q)}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        ${ansOptions.map((ans, i) => `
+          <button class="ans-btn" onclick="selectAnswer(${i}, ${correctIdx})"
+            style="padding:14px;background:#fff;border:2px solid #e0e0e0;border-radius:12px;cursor:pointer;font-size:15px;font-family:'Jua';transition:all .2s;font-weight:700;">
+            ${i === 0 ? '⭕' : '❌'} ${ans}
+          </button>
+        `).join('')}
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="hint-btn" onclick="useHint()" style="flex:1;padding:10px;background:#fff3cd;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-family:'Jua';font-weight:700;">💡 힌트</button>
+        <button class="skip-btn" onclick="skipQuestion()" style="flex:1;padding:10px;background:#e0e0e0;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-family:'Jua';font-weight:700;">⏭ 넘기기</button>
+      </div>
+    </div>
+  `;
+  updateProgress();
+}
+
+function selectAnswer(selectedIdx, correctIdx) {
+  const q = QZ.pool[QZ.idx];
+  const isCorrect = selectedIdx === correctIdx;
+  QZ.total++;
+  if (isCorrect) {
+    QZ.correct++; QZ.combo++;
+    const points = Math.max(10, 100 - QZ.combo * 2);
+    QZ.score += points;
+  } else {
+    QZ.combo = 0;
+  }
+  QZ.answers.push({
+    q: q.q,
+    selected: selectedIdx === 0 ? 'O' : 'X',
+    correct: q.a,
+    isCorrect
+  });
+  QZ.history.push({ cat: q.c, correct: isCorrect, ans: q.a });
+
+  const btns = document.querySelectorAll('.ans-btn');
+  btns.forEach((btn, i) => {
+    btn.disabled = true;
+    btn.style.pointerEvents = 'none';
+    if (i === correctIdx) {
+      btn.style.background = '#d4edda';
+      btn.style.borderColor = '#28a745';
+    }
+    if (i === selectedIdx && !isCorrect) {
+      btn.style.background = '#f8d7da';
+      btn.style.borderColor = '#f06868';
+    }
+  });
+  document.querySelector('.hint-btn').disabled = true;
+  document.querySelector('.skip-btn').disabled = true;
+
+  setTimeout(() => {
+    QZ.idx++;
+    QZ.hintUsed = false;
+    updateStats();
+    renderBoard();
+  }, 1000);
+}
+
+function useHint() {
+  if (QZ.hintUsed) return;
+  QZ.hintUsed = true;
+  QZ.hints++;
+  const q = QZ.pool[QZ.idx];
+  const hint = q.h || '문제를 다시 읽어보세요';
+  alert('💡 힌트: ' + hint);
+  document.querySelector('.hint-btn').disabled = true;
+  updateStats();
+}
+
+function skipQuestion() {
+  QZ.skips++;
+  QZ.combo = 0;
+  QZ.idx++;
+  QZ.hintUsed = false;
+  updateStats();
+  renderBoard();
+}
+
+function updateStats() {
+  const sc = document.getElementById('sc');
+  const sv = document.getElementById('sv');
+  const tot = document.getElementById('tot');
+  const sk = document.getElementById('sk-stat');
+  const hc = document.getElementById('hc');
+  const cb = document.getElementById('cb');
+
+  if (sc) sc.textContent = QZ.score;
+  if (sv) sv.textContent = QZ.correct;
+  if (tot) tot.textContent = QZ.total;
+  if (sk) sk.textContent = QZ.skips;
+  if (hc) hc.textContent = QZ.hints;
+  if (cb) cb.textContent = QZ.combo;
+}
+
+function updateProgress() {
+  const prog = document.getElementById('prog');
+  if (!prog) return;
+  const pct = QZ.pool.length > 0 ? ((QZ.idx / QZ.pool.length) * 100) : 0;
+  prog.style.width = pct + '%';
+}
+
+let timerInterval = null;
+function toggleTimer() {
+  const tbox = document.getElementById('tbox');
+  if (!tbox) return;
+  QZ.timerRunning = !QZ.timerRunning;
+  if (QZ.timerRunning) {
+    let secs = 0;
+    timerInterval = setInterval(() => {
+      secs++;
+      const m = Math.floor(secs / 60);
+      const s = secs % 60;
+      tbox.textContent = '⏱ ' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+    }, 1000);
+  } else {
+    if (timerInterval) clearInterval(timerInterval);
+  }
+}
+
+function toggleTA() {
+  QZ.taActive = !QZ.taActive;
+  const panel = document.getElementById('ta-panel');
+  const btn = document.getElementById('tabtn');
+  if (QZ.taActive) {
+    if (panel) panel.style.display = 'block';
+    if (btn) btn.style.background = 'rgba(240,104,120,.28)';
+    startTA();
+  } else {
+    if (panel) panel.style.display = 'none';
+    if (btn) btn.style.background = '';
+    stopTA();
+  }
+}
+
+function cycleTATime() {
+  const times = [30, 60, 120];
+  const idx = times.indexOf(QZ.taTime);
+  QZ.taTime = times[(idx + 1) % times.length];
+  QZ.taRemain = QZ.taTime;
+  const val = document.getElementById('ta-time');
+  if (val) val.textContent = QZ.taTime + '초';
+}
+
+let taInterval = null;
+function startTA() {
+  QZ.taRemain = QZ.taTime;
+  QZ.solved = 0;
+  QZ.taScore = 0;
+  taInterval = setInterval(() => {
+    QZ.taRemain--;
+    updateTABar();
+    if (QZ.taRemain <= 0) {
+      stopTA();
+      showTAResult();
+    }
+  }, 1000);
+}
+
+function stopTA() {
+  if (taInterval) clearInterval(taInterval);
+}
+
+function updateTABar() {
+  const bar = document.getElementById('ta-bar');
+  const val = document.getElementById('ta-time');
+  if (bar) {
+    const pct = (QZ.taRemain / QZ.taTime) * 100;
+    bar.style.width = pct + '%';
+  }
+  if (val) {
+    const s = QZ.taRemain;
+    val.textContent = s + '초';
+  }
+  const solved = document.getElementById('ta-solved');
+  const score = document.getElementById('ta-score');
+  if (solved) solved.textContent = QZ.solved;
+  if (score) score.textContent = QZ.taScore;
+}
+
+function showWin() {
+  const modal = document.getElementById('win-bg');
+  if (!modal) return;
+  modal.innerHTML = `
+    <div class="modal-box" style="text-align:center;">
+      <div style="font-size:48px;margin-bottom:16px;">🎉</div>
+      <div style="font-size:20px;font-family:'Jua';font-weight:700;margin-bottom:12px;">게임 완료!</div>
+      <div style="font-size:14px;color:#666;margin-bottom:24px;">
+        <div style="margin:4px 0;">점수: <b>${QZ.score}점</b></div>
+        <div style="margin:4px 0;">정답: <b>${QZ.correct}/${QZ.total}</b></div>
+        <div style="margin:4px 0;">성공률: <b>${QZ.total > 0 ? Math.round(QZ.correct / QZ.total * 100) : 0}%</b></div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="document.getElementById('win-bg').style.display='none';loadQuiz();" style="flex:1;padding:12px;background:#f06878;color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:'Jua';font-weight:700;">🔄 새 게임</button>
+        <button onclick="showReport();" style="flex:1;padding:12px;background:#48cae4;color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:'Jua';font-weight:700;">📊 성적표</button>
+      </div>
+    </div>
+  `;
+  modal.style.display = 'flex';
+}
+
+function showTAResult() {
+  const modal = document.getElementById('ta-bg');
+  if (!modal) return;
+  modal.innerHTML = `
+    <div class="modal-box" style="text-align:center;">
+      <div style="font-size:48px;margin-bottom:16px;">⏰</div>
+      <div style="font-size:20px;font-family:'Jua';font-weight:700;margin-bottom:12px;">타임어택 완료!</div>
+      <div style="font-size:14px;color:#666;margin-bottom:24px;">
+        <div style="margin:4px 0;">풀이: <b>${QZ.solved}문제</b></div>
+        <div style="margin:4px 0;">점수: <b>${QZ.taScore}점</b></div>
+      </div>
+      <button onclick="document.getElementById('ta-bg').style.display='none';" style="width:100%;padding:12px;background:#f06878;color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:'Jua';font-weight:700;">닫기</button>
+    </div>
+  `;
+  modal.style.display = 'flex';
+}
+
+function showReport() {
+  const modal = document.getElementById('rpt-bg');
+  if (!modal) return;
+  const cats = [...new Set(QZ.history.map(h => h.cat))];
+  const catStats = cats.map(c => {
+    const h = QZ.history.filter(x => x.cat === c);
+    const correct = h.filter(x => x.correct).length;
+    return {
+      cat: c,
+      correct,
+      total: h.length,
+      rate: h.length > 0 ? Math.round(correct / h.length * 100) : 0
+    };
+  });
+  const catEmoji = { 'korean': '📖', 'math': '🔢', 'history': '🏛', 'science': '🔬' };
+  modal.innerHTML = `
+    <div class="modal-box" style="overflow-y:auto;max-height:80vh;">
+      <div style="text-align:center;margin-bottom:24px;">
+        <div style="font-size:32px;font-family:'Jua';font-weight:700;margin-bottom:16px;">📊 성적표</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+          <div style="background:#f0f0f0;padding:12px;border-radius:8px;">
+            <div style="font-size:12px;color:#999;">총점</div>
+            <div style="font-size:24px;font-family:'Jua';font-weight:700;">${QZ.score}점</div>
+          </div>
+          <div style="background:#f0f0f0;padding:12px;border-radius:8px;">
+            <div style="font-size:12px;color:#999;">정답률</div>
+            <div style="font-size:24px;font-family:'Jua';font-weight:700;">${QZ.total > 0 ? Math.round(QZ.correct / QZ.total * 100) : 0}%</div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-bottom:20px;">
+        <div style="font-size:14px;font-family:'Jua';font-weight:700;margin-bottom:12px;">카테고리별 성적</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          ${catStats.map(s => `
+            <div style="background:#f5f5f5;padding:12px;border-radius:8px;display:flex;align-items:center;justify-content:space-between;">
+              <span>${catEmoji[s.cat] || '📚'} ${s.cat}</span>
+              <span style="font-family:'Jua';font-weight:700;">${s.correct}/${s.total} (${s.rate}%)</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      <button onclick="document.getElementById('rpt-bg').style.display='none';" style="width:100%;padding:12px;background:#f06878;color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:'Jua';font-weight:700;">닫기</button>
+    </div>
+  `;
+  modal.style.display = 'flex';
+}
+
+// 초기화 (DOM 준비 시)
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('board')) initQuiz();
+  });
+} else {
+  if (document.getElementById('board')) initQuiz();
+}

@@ -2139,3 +2139,75 @@ body.dark-mode .asb-inp,body.dark-mode .asb-ta,body.dark-mode .gal-inp,body.dark
 .stu-viewer-bg{position:fixed;inset:0;z-index:1300;background:rgba(10,10,20,.82);
   backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;}
 .stu-viewer-bg.on{display:flex;}
+
+/* ═══ 공부하기 - 퀴즈 시스템 ═══ */
+.pill-row{display:flex;gap:8px;overflow-x:auto;padding:12px;flex-wrap:wrap;align-items:center;}
+.pill-row::-webkit-scrollbar{display:none;}
+.pill{padding:10px 18px;background:#fff;border:2px solid #e0e0e0;border-radius:99px;
+  cursor:pointer;font-family:'Jua',sans-serif;font-size:13px;font-weight:700;color:#666;
+  transition:all .2s;white-space:nowrap;}
+.pill:hover{border-color:#f06878;}
+.pill.on-all,.pill.on-easy,.pill.on-normal,.pill.on-hard{
+  background:rgba(240,104,120,.28);border-color:var(--blue);color:var(--blue);}
+
+.stats-row{display:flex;gap:8px;padding:12px;overflow-x:auto;flex-wrap:wrap;}
+.chip{background:#fff;border:1.5px solid #e0e0e0;border-radius:20px;
+  padding:8px 14px;font-size:12px;font-family:'Jua',sans-serif;color:#666;flex-shrink:0;}
+
+.timer-row{display:flex;gap:8px;padding:12px;align-items:center;flex-wrap:wrap;}
+.tbox{background:linear-gradient(135deg,#fff5f5,#fff);border:2px solid #ffc8d0;border-radius:12px;
+  padding:10px 16px;font-family:'Jua',sans-serif;font-weight:700;color:#f06878;font-size:14px;flex-shrink:0;}
+.tbtn{padding:10px 14px;background:#fff;border:2px solid #e0e0e0;border-radius:12px;
+  cursor:pointer;font-family:'Jua',sans-serif;font-size:12px;font-weight:700;color:#666;
+  transition:all .2s;white-space:nowrap;}
+.tbtn:hover{border-color:#f06878;color:#f06878;}
+.report-btn{background:linear-gradient(135deg,#f06878,#e04858);color:#fff;border:none;}
+
+.ta-panel{display:flex;flex-direction:column;gap:12px;padding:12px;background:#fff9f9;border-radius:12px;}
+.ta-info{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:13px;font-family:'Jua';}
+.ta-label{font-weight:700;color:#f06878;}
+.ta-time-val{font-size:16px;font-weight:700;color:#f06878;}
+.ta-stat{color:#666;}
+.ta-set-btn{padding:6px 12px;background:#fff3cd;border:none;border-radius:8px;
+  cursor:pointer;font-family:'Jua',sans-serif;font-size:11px;font-weight:700;}
+.ta-bar-wrap{width:100%;height:6px;background:#e0e0e0;border-radius:99px;overflow:hidden;}
+.ta-bar{height:100%;background:linear-gradient(90deg,#f06878,#e04858);width:100%;transition:width .1s;}
+
+.combo-line{height:3px;background:linear-gradient(90deg,transparent,#f06878,transparent);margin:0 12px;}
+.prog-wrap{padding:0 12px;margin-bottom:12px;}
+.prog-bar{height:4px;background:linear-gradient(90deg,#f06878,#e04858);border-radius:99px;
+  width:0%;transition:width .2s;}
+
+.board{min-height:200px;display:flex;align-items:center;justify-content:center;
+  background:#fff;border-radius:12px;padding:16px;margin:0 12px 12px;}
+
+.ans-btn{padding:14px;background:#fff;border:2px solid #e0e0e0;border-radius:12px;
+  cursor:pointer;font-size:15px;font-family:'Jua',sans-serif;transition:all .2s;
+  font-weight:700;width:100%;}
+.ans-btn:hover:not(:disabled){border-color:#f06878;background:#fff9f9;}
+.ans-btn:disabled{opacity:.6;cursor:not-allowed;}
+
+.hint-btn{padding:10px;background:#fff3cd;border:none;border-radius:8px;
+  cursor:pointer;font-size:13px;font-family:'Jua',sans-serif;font-weight:700;}
+.hint-btn:disabled{opacity:.5;cursor:not-allowed;}
+
+.skip-btn{padding:10px;background:#e0e0e0;border:none;border-radius:8px;
+  cursor:pointer;font-size:13px;font-family:'Jua',sans-serif;font-weight:700;}
+.skip-btn:disabled{opacity:.5;cursor:not-allowed;}
+
+.modal-box{background:#fff;border-radius:18px;padding:24px;
+  max-width:400px;box-shadow:0 10px 40px rgba(0,0,0,.15);}
+
+/* 다크모드 퀴즈 스타일 */
+body.dark-mode .pill{background:#2a1830;border-color:#4a2040;color:#c090a0;}
+body.dark-mode .pill.on-all,body.dark-mode .pill.on-easy,
+body.dark-mode .pill.on-normal,body.dark-mode .pill.on-hard{
+  background:#48cae4;border-color:#48cae4;color:#1a1a2e;}
+body.dark-mode .chip{background:#2a1830;border-color:#4a2040;color:#c090a0;}
+body.dark-mode .tbox{background:rgba(72,202,228,.1);border-color:#48cae4;color:#48cae4;}
+body.dark-mode .tbtn{background:#2a1830;border-color:#4a2040;color:#c090a0;}
+body.dark-mode .tbtn:hover{border-color:#48cae4;color:#48cae4;}
+body.dark-mode .ta-panel{background:#2a1830;border:1px solid #4a2040;}
+body.dark-mode .board{background:#1e1b2e;border:1px solid #4a2040;}
+body.dark-mode .ans-btn{background:#2a1830;border-color:#4a2040;color:#c090a0;}
+body.dark-mode .ans-btn:hover:not(:disabled){background:#3a2840;border-color:#48cae4;}
