@@ -1932,7 +1932,7 @@ function openTetris(){
 }
 
 function closeTetris(){
-  cancelAnimationFrame(TET.rafId);TET.over=true;
+  cancelAnimationFrame(TET.rafId);TET.over=true;closeGame('tetris');
 }
 
 // Override closeGame to stop tetris
