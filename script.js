@@ -2435,10 +2435,8 @@ function ytDoSearch(q){
 function ytSearchNoKeyUI(q, sq, errMsg){
   const keyVal = lsGet('yt_api_key','');
   return `<div style="background:#fff;border:2px solid var(--border);border-radius:14px;overflow:hidden;">
-    <div style="padding:10px 16px;background:linear-gradient(135deg,#ff0000,#cc0000);display:flex;align-items:center;justify-content:space-between;">
+    <div style="padding:10px 16px;background:linear-gradient(135deg,#ff0000,#cc0000);">
       <span style="font-size:14px;font-weight:900;color:#fff;font-family:Jua,sans-serif;">📺 유튜브 검색</span>
-      <button onclick="window.open('https://www.youtube.com/results?search_query=${sq}','_blank')"
-        style="padding:4px 12px;font-size:11px;font-family:Jua,sans-serif;background:rgba(255,255,255,.2);color:#fff;border:1.5px solid rgba(255,255,255,.5);border-radius:8px;cursor:pointer;">유튜브 새창</button>
     </div>
     <div style="padding:16px;">
       ${errMsg?`<div style="background:#fef2f2;border:1.5px solid #f8a8b0;border-radius:10px;padding:10px 14px;font-size:12px;color:#b91c1c;margin-bottom:12px;">${errMsg}</div>`:''}
@@ -2496,12 +2494,8 @@ function soopDoSearch(q){
   const soopSearchUrl = 'https://www.sooplive.com/search?szLocation=main&szSearchType=total&szKeyword='+sq;
   results.innerHTML = `
     <div style="border:2px solid #1a3a5c;border-radius:14px;overflow:hidden;background:#fff;margin-top:4px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:linear-gradient(135deg,#0d1b2a,#1a4a7a);">
+      <div style="padding:10px 14px;background:linear-gradient(135deg,#0d1b2a,#1a4a7a);">
         <span style="font-size:14px;font-weight:900;color:#fff;font-family:Jua,sans-serif;">🎙 "${q}" SOOP 검색</span>
-        <button onclick="window.open('${soopSearchUrl}','_blank')"
-          style="padding:4px 12px;font-size:11px;font-family:Jua,sans-serif;background:rgba(255,255,255,.15);color:#fff;border:1.5px solid rgba(255,255,255,.4);border-radius:8px;cursor:pointer;">
-          새창으로 열기
-        </button>
       </div>
       <div style="position:relative;width:100%;height:420px;background:#0d1b2a;">
         <iframe
