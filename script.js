@@ -1660,16 +1660,16 @@ function openGame(id){
 function closeGame(id){
   try{
     if(id==='tetris') closeTetris();
-    if(id==='minesweeper'){clearInterval(MS&&MS.timerID);document.removeEventListener('keydown',msKey);}
+    if(id==='minesweeper'){clearInterval(MS&&MS.timerID);if(typeof msKey==='function')document.removeEventListener('keydown',msKey);}
     if(id==='mole') stopMole&&stopMole();
-    if(id==='snake'){clearInterval(SNAKE&&SNAKE.timerID);document.removeEventListener('keydown',snakeKey);}
+    if(id==='snake'){clearInterval(SNAKE&&SNAKE.timerID);if(typeof snakeKey==='function')document.removeEventListener('keydown',snakeKey);}
     if(id==='ladder'&&_spellTimer){clearInterval(_spellTimer);}
     if(id==='spelling'&&_spellTimer){clearInterval(_spellTimer);}
     if(id==='typing'){cancelAnimationFrame(TYPING&&TYPING.animID);clearInterval(TYPING&&TYPING.interval);}
-    if(id==='pacman'){cancelAnimationFrame(PAC&&PAC.animID);document.removeEventListener('keydown',pacKey);}
-    if(id==='stack'){cancelAnimationFrame(STACK&&STACK.animID);document.removeEventListener('keydown',stackKey);}
-    if(id==='dino'){cancelAnimationFrame(DINO&&DINO.animID);document.removeEventListener('keydown',dinoKey);}
-    if(id==='dodge'){cancelAnimationFrame(DODGE&&DODGE.animID);document.removeEventListener('keydown',dodgeKey);document.removeEventListener('keyup',dodgeKeyUp);}
+    if(id==='pacman'){cancelAnimationFrame(PAC&&PAC.animID);if(typeof pacKey==='function')document.removeEventListener('keydown',pacKey);}
+    if(id==='stack'){cancelAnimationFrame(STACK&&STACK.animID);if(typeof stackKey==='function')document.removeEventListener('keydown',stackKey);}
+    if(id==='dino'){cancelAnimationFrame(DINO&&DINO.animID);if(typeof dinoKey==='function')document.removeEventListener('keydown',dinoKey);}
+    if(id==='dodge'){cancelAnimationFrame(DODGE&&DODGE.animID);if(typeof dodgeKey==='function')document.removeEventListener('keydown',dodgeKey);if(typeof dodgeKeyUp==='function')document.removeEventListener('keyup',dodgeKeyUp);}
     if(id==='simon'){cancelAnimationFrame(SIMON&&SIMON.animID);}
     const scr=document.getElementById('game-'+id);
     if(scr){scr.classList.remove('on');scr.style.top='';scr.style.height='';}
