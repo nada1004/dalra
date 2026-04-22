@@ -472,59 +472,104 @@
 
     <!-- 공부하기 -->
     <div class="panel" id="panel-study">
-      <div style="display:flex;flex-direction:column;height:100%;width:100%;padding:12px;gap:12px;box-sizing:border-box;overflow-y:auto;">
-        <!-- 카테고리 필터 -->
-        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-          <span style="font-size:12px;color:#999;font-weight:bold;">카테고리:</span>
-          <div id="cat-row" style="display:flex;gap:6px;flex-wrap:wrap;">
-            <button class="pill" onclick="setCat('all',this)" style="padding:6px 12px;background:rgba(240,104,120,.28);color:var(--blue);border:1px solid #f06878;border-radius:20px;font-size:12px;font-family:'Jua';cursor:pointer;font-weight:700;">🌟 전체</button>
-            <button class="pill" onclick="setCat('math',this)" style="padding:6px 12px;background:#fff;color:#666;border:1px solid #e0e0e0;border-radius:20px;font-size:12px;font-family:'Jua';cursor:pointer;">🔢 수학</button>
-            <button class="pill" onclick="setCat('korean',this)" style="padding:6px 12px;background:#fff;color:#666;border:1px solid #e0e0e0;border-radius:20px;font-size:12px;font-family:'Jua';cursor:pointer;">📖 국어</button>
-            <button class="pill" onclick="setCat('science',this)" style="padding:6px 12px;background:#fff;color:#666;border:1px solid #e0e0e0;border-radius:20px;font-size:12px;font-family:'Jua';cursor:pointer;">🔬 과학</button>
-            <button class="pill" onclick="setCat('history',this)" style="padding:6px 12px;background:#fff;color:#666;border:1px solid #e0e0e0;border-radius:20px;font-size:12px;font-family:'Jua';cursor:pointer;">🏛 역사</button>
-            <button class="pill" onclick="setCat('sports',this)" style="padding:6px 12px;background:#fff;color:#666;border:1px solid #e0e0e0;border-radius:20px;font-size:12px;font-family:'Jua';cursor:pointer;">⚽ 스포츠</button>
-            <button class="pill" onclick="setCat('kpop',this)" style="padding:6px 12px;background:#fff;color:#666;border:1px solid #e0e0e0;border-radius:20px;font-size:12px;font-family:'Jua';cursor:pointer;">🎤 연예</button>
-            <button class="pill" onclick="setCat('general',this)" style="padding:6px 12px;background:#fff;color:#666;border:1px solid #e0e0e0;border-radius:20px;font-size:12px;font-family:'Jua';cursor:pointer;">🧠 상식</button>
-            <button class="pill" onclick="setCat('nonsense',this)" style="padding:6px 12px;background:#fff;color:#666;border:1px solid #e0e0e0;border-radius:20px;font-size:12px;font-family:'Jua';cursor:pointer;">😂 넌센스</button>
+      <div style="display:flex;flex-direction:column;height:100%;width:100%;padding:16px;gap:16px;box-sizing:border-box;overflow-y:auto;background:linear-gradient(135deg,#fff9fa,#f5f0ff);">
+
+        <!-- 헤더 -->
+        <div style="text-align:center;margin-bottom:8px;">
+          <div style="font-size:28px;font-family:'Jua';font-weight:900;color:#f06878;margin-bottom:4px;">📚 공부하기</div>
+          <div style="font-size:12px;color:#999;">문제를 풀고 점수를 얻어보세요!</div>
+        </div>
+
+        <!-- 카테고리 섹션 -->
+        <div style="background:#fff;border-radius:16px;padding:12px;box-shadow:0 2px 8px rgba(240,104,120,0.08);">
+          <div style="font-size:13px;color:#f06878;font-family:'Jua';font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px;">📖 카테고리 선택</div>
+          <div id="cat-row" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(80px,1fr));gap:8px;">
+            <button class="pill" onclick="setCat('all',this)" style="padding:10px;background:linear-gradient(135deg,#f06878,#e04858);color:#fff;border:none;border-radius:12px;font-size:12px;font-family:'Jua';cursor:pointer;font-weight:700;transition:all .2s;box-shadow:0 2px 6px rgba(240,104,120,0.2);">🌟 전체</button>
+            <button class="pill" onclick="setCat('math',this)" style="padding:10px;background:#fff;color:#666;border:2px solid #e0e0e0;border-radius:12px;font-size:12px;font-family:'Jua';cursor:pointer;transition:all .2s;">🔢 수학</button>
+            <button class="pill" onclick="setCat('korean',this)" style="padding:10px;background:#fff;color:#666;border:2px solid #e0e0e0;border-radius:12px;font-size:12px;font-family:'Jua';cursor:pointer;transition:all .2s;">📖 국어</button>
+            <button class="pill" onclick="setCat('science',this)" style="padding:10px;background:#fff;color:#666;border:2px solid #e0e0e0;border-radius:12px;font-size:12px;font-family:'Jua';cursor:pointer;transition:all .2s;">🔬 과학</button>
+            <button class="pill" onclick="setCat('history',this)" style="padding:10px;background:#fff;color:#666;border:2px solid #e0e0e0;border-radius:12px;font-size:12px;font-family:'Jua';cursor:pointer;transition:all .2s;">🏛 역사</button>
+            <button class="pill" onclick="setCat('sports',this)" style="padding:10px;background:#fff;color:#666;border:2px solid #e0e0e0;border-radius:12px;font-size:12px;font-family:'Jua';cursor:pointer;transition:all .2s;">⚽ 스포츠</button>
+            <button class="pill" onclick="setCat('kpop',this)" style="padding:10px;background:#fff;color:#666;border:2px solid #e0e0e0;border-radius:12px;font-size:12px;font-family:'Jua';cursor:pointer;transition:all .2s;">🎤 연예</button>
+            <button class="pill" onclick="setCat('general',this)" style="padding:10px;background:#fff;color:#666;border:2px solid #e0e0e0;border-radius:12px;font-size:12px;font-family:'Jua';cursor:pointer;transition:all .2s;">🧠 상식</button>
+            <button class="pill" onclick="setCat('nonsense',this)" style="padding:10px;background:#fff;color:#666;border:2px solid #e0e0e0;border-radius:12px;font-size:12px;font-family:'Jua';cursor:pointer;transition:all .2s;">😂 넌센스</button>
           </div>
         </div>
 
-        <!-- 난이도 필터 -->
-        <div style="display:flex;gap:8px;align-items:center;">
-          <span style="font-size:12px;color:#999;font-weight:bold;">난이도:</span>
-          <div id="diff-row" style="display:flex;gap:6px;">
-            <button class="pill" onclick="setDiff('easy',this)" style="padding:6px 12px;background:#fff;color:#666;border:1px solid #e0e0e0;border-radius:20px;font-size:12px;font-family:'Jua';cursor:pointer;">⭐ 쉬움</button>
-            <button class="pill" onclick="setDiff('normal',this)" style="padding:6px 12px;background:#fff;color:#666;border:1px solid #e0e0e0;border-radius:20px;font-size:12px;font-family:'Jua';cursor:pointer;">⭐⭐ 중간</button>
-            <button class="pill" onclick="setDiff('hard',this)" style="padding:6px 12px;background:#fff;color:#666;border:1px solid #e0e0e0;border-radius:20px;font-size:12px;font-family:'Jua';cursor:pointer;">⭐⭐⭐ 어려움</button>
+        <!-- 난이도 섹션 -->
+        <div style="background:#fff;border-radius:16px;padding:12px;box-shadow:0 2px 8px rgba(240,104,120,0.08);">
+          <div style="font-size:13px;color:#f06878;font-family:'Jua';font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px;">⭐ 난이도 선택</div>
+          <div id="diff-row" style="display:flex;gap:8px;">
+            <button class="pill" onclick="setDiff('easy',this)" style="flex:1;padding:12px;background:#fff;color:#666;border:2px solid #e0e0e0;border-radius:12px;font-size:12px;font-family:'Jua';cursor:pointer;transition:all .2s;font-weight:600;">⭐ 쉬움</button>
+            <button class="pill" onclick="setDiff('normal',this)" style="flex:1;padding:12px;background:#fff;color:#666;border:2px solid #e0e0e0;border-radius:12px;font-size:12px;font-family:'Jua';cursor:pointer;transition:all .2s;font-weight:600;">⭐⭐ 중간</button>
+            <button class="pill" onclick="setDiff('hard',this)" style="flex:1;padding:12px;background:#fff;color:#666;border:2px solid #e0e0e0;border-radius:12px;font-size:12px;font-family:'Jua';cursor:pointer;transition:all .2s;font-weight:600;">⭐⭐⭐ 어려움</button>
           </div>
         </div>
 
-        <!-- 통계 -->
-        <div style="display:flex;gap:10px;flex-wrap:wrap;">
-          <div style="background:#fff3cd;padding:8px 12px;border-radius:12px;font-size:12px;font-family:'Jua';border:1px solid #ffc107;">점수: <span id="score-display">0</span></div>
-          <div style="background:#d1ecf1;padding:8px 12px;border-radius:12px;font-size:12px;font-family:'Jua';border:1px solid #17a2b8;">정답: <span id="correct-display">0</span>/<span id="total-display">0</span></div>
-          <div style="background:#d4edda;padding:8px 12px;border-radius:12px;font-size:12px;font-family:'Jua';border:1px solid #28a745;">연타: <span id="combo-display">0</span></div>
+        <!-- 통계 및 진행도 -->
+        <div style="background:linear-gradient(135deg,rgba(240,104,120,0.08),rgba(72,202,228,0.08));border-radius:16px;padding:14px;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+          <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+            <div style="flex:1;min-width:80px;background:#fff;padding:10px 12px;border-radius:12px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,0.05);">
+              <div style="font-size:11px;color:#999;font-family:'Jua';margin-bottom:4px;">점수</div>
+              <div style="font-size:18px;font-weight:900;color:#f06878;font-family:'Jua';"><span id="score-display">0</span></div>
+            </div>
+            <div style="flex:1;min-width:80px;background:#fff;padding:10px 12px;border-radius:12px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,0.05);">
+              <div style="font-size:11px;color:#999;font-family:'Jua';margin-bottom:4px;">정답률</div>
+              <div style="font-size:18px;font-weight:900;color:#48cae4;font-family:'Jua';"><span id="correct-display">0</span>/<span id="total-display">0</span></div>
+            </div>
+            <div style="flex:1;min-width:80px;background:#fff;padding:10px 12px;border-radius:12px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,0.05);">
+              <div style="font-size:11px;color:#999;font-family:'Jua';margin-bottom:4px;">연타</div>
+              <div style="font-size:18px;font-weight:900;color:#28a745;font-family:'Jua';"><span id="combo-display">0</span>🔥</div>
+            </div>
+          </div>
+          <div style="background:#fff;height:8px;border-radius:10px;overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,0.1);">
+            <div id="progress-bar" style="height:100%;background:linear-gradient(90deg,#f06878,#e04858);width:0%;transition:width .3s ease;border-radius:10px;"></div>
+          </div>
+          <div style="font-size:11px;color:#999;margin-top:8px;text-align:center;font-family:'Jua';">진행도: <span id="progress-text">0</span>%</div>
         </div>
 
         <!-- 퀴즈 보드 -->
-        <div id="board" style="flex:1;background:#fff;border:2px solid #fce0e0;border-radius:15px;padding:16px;overflow-y:auto;min-height:300px;display:flex;flex-direction:column;gap:12px;justify-content:center;align-items:center;text-align:center;color:#666;">
+        <div id="board" style="flex:1;background:#fff;border-radius:16px;padding:24px;overflow-y:auto;min-height:250px;display:flex;flex-direction:column;gap:16px;justify-content:center;align-items:center;text-align:center;color:#666;box-shadow:0 4px 16px rgba(240,104,120,0.12);">
           문제를 불러오는 중...
         </div>
 
         <!-- 모달 - 게임 완료 -->
-        <div id="win-bg" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:999;align-items:center;justify-content:center;">
-          <div style="background:#fff;border-radius:20px;padding:24px;max-width:400px;width:90%;box-shadow:0 10px 40px rgba(0,0,0,0.3);text-align:center;">
-            <div style="font-size:48px;margin-bottom:12px;">🎉</div>
-            <div style="font-size:24px;font-weight:bold;color:#f06878;margin-bottom:16px;">축하합니다!</div>
-            <div style="font-size:14px;color:#666;margin-bottom:20px;">모든 문제를 풀었어요!</div>
-            <div style="background:#f5f5f5;padding:12px;border-radius:12px;margin-bottom:16px;">
-              <div style="font-size:18px;font-weight:bold;color:#f06878;margin-bottom:8px;"><span id="win-score">0</span>점</div>
-              <div style="font-size:12px;color:#666;">정답률: <span id="win-rate">0</span>%</div>
+        <div id="win-bg" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:999;align-items:center;justify-content:center;">
+          <div style="background:#fff;border-radius:24px;padding:32px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);text-align:center;">
+            <div style="font-size:64px;margin-bottom:16px;animation:bounce 0.6s ease;display:inline-block;">🎉</div>
+            <div style="font-size:26px;font-weight:900;color:#f06878;margin-bottom:8px;font-family:'Jua';">축하합니다!</div>
+            <div style="font-size:14px;color:#999;margin-bottom:24px;font-family:'Jua';">모든 문제를 풀었어요!</div>
+            <div style="background:linear-gradient(135deg,rgba(240,104,120,0.08),rgba(72,202,228,0.08));padding:20px;border-radius:16px;margin-bottom:24px;">
+              <div style="display:flex;justify-content:space-around;gap:12px;">
+                <div style="flex:1;">
+                  <div style="font-size:12px;color:#999;margin-bottom:4px;font-family:'Jua';">총 점수</div>
+                  <div style="font-size:32px;font-weight:900;color:#f06878;font-family:'Jua';"><span id="win-score">0</span></div>
+                </div>
+                <div style="flex:1;">
+                  <div style="font-size:12px;color:#999;margin-bottom:4px;font-family:'Jua';">정답률</div>
+                  <div style="font-size:32px;font-weight:900;color:#48cae4;font-family:'Jua';"><span id="win-rate">0</span>%</div>
+                </div>
+              </div>
             </div>
-            <button onclick="newGame()" style="background:linear-gradient(135deg,#f06878,#e04858);color:#fff;border:none;padding:10px 24px;border-radius:12px;font-size:14px;font-family:'Jua';cursor:pointer;width:100%;">다시 풀기</button>
+            <button onclick="newGame()" style="background:linear-gradient(135deg,#f06878,#e04858);color:#fff;border:none;padding:14px 28px;border-radius:14px;font-size:15px;font-family:'Jua';cursor:pointer;width:100%;font-weight:700;box-shadow:0 4px 12px rgba(240,104,120,0.3);transition:all .2s;">다시 풀기</button>
           </div>
         </div>
       </div>
+      <style>
+        @keyframes bounce {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.1); }
+        }
+        #cat-row .pill:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(240,104,120,0.15) !important;
+        }
+        #diff-row .pill:hover {
+          border-color: #f06878 !important;
+          color: #f06878 !important;
+          transform: translateY(-2px);
+        }
+      </style>
     </div>
 
     <!-- 가정통신문 모달 -->

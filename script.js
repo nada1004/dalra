@@ -6731,7 +6731,7 @@ function renderBoard() {
   const board = document.getElementById('board');
   if (!board) return;
   if (QZ.pool.length === 0) {
-    board.innerHTML = '<div style="text-align:center;padding:40px;color:#999;">문제가 없습니다</div>';
+    board.innerHTML = '<div style="text-align:center;padding:40px;color:#999;font-family:\'Jua\';">문제가 없습니다</div>';
     return;
   }
   if (QZ.idx >= QZ.pool.length) {
@@ -6742,17 +6742,20 @@ function renderBoard() {
   const catEmoji = { 'korean': '📖', 'math': '🔢', 'history': '🏛', 'science': '🔬', 'sports': '⚽', 'kpop': '🎤', 'general': '🧠', 'nonsense': '😂' }[q.c] || '📚';
 
   board.innerHTML = `
-    <div style="display:flex;flex-direction:column;gap:16px;padding:16px;width:100%;">
+    <div style="display:flex;flex-direction:column;gap:20px;width:100%;">
       <div style="text-align:center;">
-        <div style="font-size:13px;color:#999;margin-bottom:8px;">${catEmoji} 문제 ${QZ.idx + 1}/${QZ.pool.length}</div>
-        <div style="font-size:18px;font-family:'Jua';font-weight:700;line-height:1.6;color:#333;margin-bottom:16px;">${esc(q.q)}</div>
+        <div style="font-size:12px;color:#f06878;font-family:'Jua';font-weight:700;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:6px;">
+          <span>${catEmoji}</span>
+          <span>문제 ${QZ.idx + 1} / ${QZ.pool.length}</span>
+        </div>
+        <div style="font-size:20px;font-family:'Jua';font-weight:900;line-height:1.8;color:#333;margin-bottom:12px;word-break:keep-all;">${esc(q.q)}</div>
       </div>
-      <div style="display:flex;flex-direction:column;gap:10px;flex:1;">
-        <input type="text" id="answer-input" placeholder="정답을 입력하세요" style="padding:12px;font-size:15px;font-family:'Jua';border:2px solid #e0e0e0;border-radius:12px;outline:none;" onkeypress="if(event.key==='Enter') submitAnswer()"/>
+      <div style="display:flex;flex-direction:column;gap:12px;flex:1;justify-content:flex-end;">
+        <input type="text" id="answer-input" placeholder="정답을 입력하세요" style="padding:14px;font-size:16px;font-family:'Jua';border:2px solid #e0e0e0;border-radius:14px;outline:none;transition:all .2s;box-shadow:0 2px 4px rgba(0,0,0,0.05);" onfocus="this.style.borderColor='#f06878';this.style.boxShadow='0 0 0 3px rgba(240,104,120,0.1)'" onblur="this.style.borderColor='#e0e0e0';this.style.boxShadow='0 2px 4px rgba(0,0,0,0.05)'" onkeypress="if(event.key==='Enter') submitAnswer()"/>
         <div style="display:flex;gap:8px;">
-          <button onclick="submitAnswer()" style="flex:1;padding:12px;background:linear-gradient(135deg,#f06878,#e04858);color:#fff;border:none;border-radius:12px;cursor:pointer;font-size:14px;font-family:'Jua';font-weight:700;">제출</button>
-          <button onclick="useHint()" style="flex:1;padding:12px;background:#fff3cd;color:#856404;border:none;border-radius:12px;cursor:pointer;font-size:14px;font-family:'Jua';font-weight:700;">💡 힌트</button>
-          <button onclick="skipQuestion()" style="flex:1;padding:12px;background:#e0e0e0;color:#333;border:none;border-radius:12px;cursor:pointer;font-size:14px;font-family:'Jua';font-weight:700;">⏭ 넘기기</button>
+          <button onclick="submitAnswer()" style="flex:1.2;padding:14px;background:linear-gradient(135deg,#f06878,#e04858);color:#fff;border:none;border-radius:14px;cursor:pointer;font-size:15px;font-family:'Jua';font-weight:700;box-shadow:0 4px 12px rgba(240,104,120,0.25);transition:all .2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 16px rgba(240,104,120,0.35)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 4px 12px rgba(240,104,120,0.25)'">제출</button>
+          <button onclick="useHint()" style="flex:1;padding:14px;background:#fff3cd;color:#856404;border:none;border-radius:14px;cursor:pointer;font-size:15px;font-family:'Jua';font-weight:700;box-shadow:0 2px 8px rgba(255,193,7,0.2);transition:all .2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">💡 힌트</button>
+          <button onclick="skipQuestion()" style="flex:1;padding:14px;background:#e8e8e8;color:#666;border:none;border-radius:14px;cursor:pointer;font-size:15px;font-family:'Jua';font-weight:700;transition:all .2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.background='#e0e0e0'" onmouseout="this.style.transform='translateY(0)';this.style.background='#e8e8e8'">⏭ 넘기기</button>
         </div>
       </div>
     </div>
@@ -6816,11 +6819,20 @@ function updateStats() {
   const correctEl = document.getElementById('correct-display');
   const totalEl = document.getElementById('total-display');
   const comboEl = document.getElementById('combo-display');
+  const progressBar = document.getElementById('progress-bar');
+  const progressText = document.getElementById('progress-text');
 
   if (scoreEl) scoreEl.textContent = QZ.score;
   if (correctEl) correctEl.textContent = QZ.correct;
   if (totalEl) totalEl.textContent = QZ.total;
   if (comboEl) comboEl.textContent = QZ.combo;
+
+  // 진행도 업데이트
+  if (QZ.pool.length > 0) {
+    const progress = Math.round((QZ.idx / QZ.pool.length) * 100);
+    if (progressBar) progressBar.style.width = progress + '%';
+    if (progressText) progressText.textContent = progress;
+  }
 }
 
 function showWin() {
