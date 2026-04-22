@@ -4,7 +4,8 @@
       "Bash(node -c script.js)",
       "Read(//c/Users/nicek/.claude/projects/d--projects---/**)",
       "Bash(python3)",
-      "Bash(node -c qdb.js)"
+      "Bash(node -c qdb.js)",
+      "Bash(node -c d:/projects/달라/script.js)"
     ]
   }
 }

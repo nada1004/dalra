@@ -6300,7 +6300,7 @@ function convertToQDB(oxQuestions) {
 
 /* ═══ QDB 퀴즈 시스템 ═══ */
 const QZ = {
-  pool: [], cat: 'all', diff: 'easy', idx: 0,
+  pool: [], cat: 'all', diff: 'hard', idx: 0,
   score: 0, correct: 0, total: 0, combo: 0,
   answers: [], history: [], hintUsed: false
 };
@@ -6327,7 +6327,6 @@ function loadQuiz() {
 function filterQuestions() {
   let filtered = QDB || [];
   if (QZ.cat !== 'all') filtered = filtered.filter(q => q.c === QZ.cat);
-  if (QZ.diff !== 'all') filtered = filtered.filter(q => q.d === QZ.diff);
   QZ.pool = filtered.sort(() => Math.random() - 0.5);
   QZ.idx = 0;
 }
@@ -6335,14 +6334,8 @@ function filterQuestions() {
 function setCat(cat, btn) {
   const row = document.getElementById('cat-row');
   if (!row) return;
-  row.querySelectorAll('.pill').forEach(b => {
-    b.style.background = '';
-    b.style.color = '';
-  });
-  if (btn) {
-    btn.style.background = 'rgba(240,104,120,.28)';
-    btn.style.color = 'var(--blue)';
-  }
+  row.querySelectorAll('.study-cat-btn').forEach(b => b.classList.remove('on'));
+  if (btn) btn.classList.add('on');
   QZ.cat = cat;
   loadQuiz();
 }
@@ -6350,14 +6343,8 @@ function setCat(cat, btn) {
 function setDiff(diff, btn) {
   const row = document.getElementById('diff-row');
   if (!row) return;
-  row.querySelectorAll('.pill').forEach(b => {
-    b.style.background = '';
-    b.style.color = '';
-  });
-  if (btn) {
-    btn.style.background = 'rgba(240,104,120,.28)';
-    btn.style.color = 'var(--blue)';
-  }
+  row.querySelectorAll('.study-diff-btn').forEach(b => b.classList.remove('on'));
+  if (btn) btn.classList.add('on');
   QZ.diff = diff;
   loadQuiz();
 }
@@ -6375,30 +6362,28 @@ function renderBoard() {
   }
   const q = QZ.pool[QZ.idx];
   const catEmoji = { 'korean': '📖', 'math': '🔢', 'history': '🏛', 'science': '🔬', 'sports': '⚽', 'kpop': '🎤', 'general': '🧠', 'nonsense': '😂' }[q.c] || '📚';
+  const catLabel = { 'korean': '국어', 'math': '수학', 'history': '역사', 'science': '과학', 'sports': '스포츠', 'kpop': '연예', 'general': '상식', 'nonsense': '넌센스' }[q.c] || '전체';
 
   board.innerHTML = `
-    <div style="display:flex;flex-direction:column;gap:20px;width:100%;">
-      <div style="text-align:center;">
-        <div style="font-size:12px;color:#f06878;font-family:'Jua';font-weight:700;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:6px;">
-          <span>${catEmoji}</span>
-          <span>문제 ${QZ.idx + 1} / ${QZ.pool.length}</span>
-        </div>
-        <div style="font-size:20px;font-family:'Jua';font-weight:900;line-height:1.8;color:#333;margin-bottom:12px;word-break:keep-all;">${esc(q.q)}</div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:12px;flex:1;justify-content:flex-end;">
-        <input type="text" id="answer-input" placeholder="정답을 입력하세요" style="padding:14px;font-size:16px;font-family:'Jua';border:2px solid #e0e0e0;border-radius:14px;outline:none;transition:all .2s;box-shadow:0 2px 4px rgba(0,0,0,0.05);" onfocus="this.style.borderColor='#f06878';this.style.boxShadow='0 0 0 3px rgba(240,104,120,0.1)'" onblur="this.style.borderColor='#e0e0e0';this.style.boxShadow='0 2px 4px rgba(0,0,0,0.05)'" onkeypress="if(event.key==='Enter') submitAnswer()"/>
-        <div style="display:flex;gap:8px;">
-          <button onclick="submitAnswer()" style="flex:1.2;padding:14px;background:linear-gradient(135deg,#f06878,#e04858);color:#fff;border:none;border-radius:14px;cursor:pointer;font-size:15px;font-family:'Jua';font-weight:700;box-shadow:0 4px 12px rgba(240,104,120,0.25);transition:all .2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 16px rgba(240,104,120,0.35)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 4px 12px rgba(240,104,120,0.25)'">제출</button>
-          <button onclick="useHint()" style="flex:1;padding:14px;background:#fff3cd;color:#856404;border:none;border-radius:14px;cursor:pointer;font-size:15px;font-family:'Jua';font-weight:700;box-shadow:0 2px 8px rgba(255,193,7,0.2);transition:all .2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">💡 힌트</button>
-          <button onclick="skipQuestion()" style="flex:1;padding:14px;background:#e8e8e8;color:#666;border:none;border-radius:14px;cursor:pointer;font-size:15px;font-family:'Jua';font-weight:700;transition:all .2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.background='#e0e0e0'" onmouseout="this.style.transform='translateY(0)';this.style.background='#e8e8e8'">⏭ 넘기기</button>
-        </div>
-      </div>
+    <div class="sb-header">
+      <span class="sb-cat">${catEmoji} ${catLabel}</span>
+      <span class="sb-num">${QZ.idx+1} / ${QZ.pool.length}</span>
+    </div>
+    <div class="sb-question">${esc(q.q)}</div>
+    ${q.h ? `<div class="sb-hint-box" id="hint-box" style="display:none">💡 ${q.h}</div>` : ''}
+    <div class="sb-input-wrap">
+      <input class="sb-input" id="answer-input" type="text"
+        placeholder="정답을 입력하세요"
+        onkeypress="if(event.key==='Enter')submitAnswer()"
+        autocomplete="off" />
+    </div>
+    <div class="sb-btns">
+      <button class="sb-btn-submit" onclick="submitAnswer()">✅ 제출</button>
+      ${q.h ? `<button class="sb-btn-hint" onclick="useHint()">💡 힌트</button>` : ''}
+      <button class="sb-btn-skip" onclick="skipQuestion()">⏭ 넘기기</button>
     </div>
   `;
-  setTimeout(() => {
-    const inp = document.getElementById('answer-input');
-    if (inp) inp.focus();
-  }, 100);
+  setTimeout(() => document.getElementById('answer-input')?.focus(), 50);
 }
 
 function submitAnswer() {
@@ -6436,9 +6421,8 @@ function submitAnswer() {
 function useHint() {
   if (QZ.hintUsed) return;
   QZ.hintUsed = true;
-  const q = QZ.pool[QZ.idx];
-  const hint = q.h || '문제를 다시 읽어보세요';
-  showToast('💡 ' + hint);
+  const hintBox = document.getElementById('hint-box');
+  if (hintBox) hintBox.style.display = 'block';
 }
 
 function skipQuestion() {
@@ -6482,12 +6466,12 @@ function showWin() {
   if (scoreEl) scoreEl.textContent = QZ.score;
   if (rateEl) rateEl.textContent = rate;
 
-  modal.style.display = 'flex';
+  modal.classList.add('show');
 }
 
 function closeModal() {
   const modal = document.getElementById('win-bg');
-  if (modal) modal.style.display = 'none';
+  if (modal) modal.classList.remove('show');
 }
 
 function newGame() {
