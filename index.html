@@ -471,64 +471,124 @@
     </div>
 
     <!-- 공부하기 -->
-
     <div class="panel" id="panel-study">
-    <div class="study-header">
-        <div class="study-title">📖 공부하기</div>
-        <div class="study-prog" id="study-prog">1 / 454</div>
-      </div>
-      <!-- 모드 토글 -->
-      <div class="study-mode-toggle" style="width:100%;max-width:100%;">
-        <button class="smt-btn on" id="mode-normal" onclick="setStudyMode('normal')">📖 일반 모드</button>
-        <button class="smt-btn" id="mode-flash" onclick="setStudyMode('flash')">🃏 플래시카드</button>
-      </div>
-      <div class="study-filter" id="study-filter"></div>
+      <header style="text-align:center;padding:20px 0 8px;">
+        <div class="logo" style="font-size:2rem;">📖 공부하기 ✨</div>
+        <div class="sub" style="margin-top:3px;">카테고리 선택 · 난이도 선택 · 문제 풀이</div>
+      </header>
 
-      <!-- 일반 모드 -->
-      <div id="study-normal-view" style="width:100%;max-width:100%;display:flex;flex-direction:column;gap:clamp(10px,1.8vh,16px);">
-        <div class="study-board">
-          <span class="sb-label" id="sb-cat">📚 상식</span>
-          <div class="sb-question" id="sb-question">문제를 선택하세요</div>
-          <div class="sb-answer">
-            <div class="sb-ans-badge t" id="sb-badge">O</div>
-            <div class="sb-ans-text" id="sb-ans-text">정답: O (맞다)</div>
-          </div>
-          <div class="sb-add-row">
-            <button class="sb-add-btn" id="sb-add-btn" onclick="addCurrentToCustom()">➕ 내 문제로 추가</button>
-          </div>
+      <!-- 카테고리 -->
+      <div class="pill-row" id="cat-row">
+        <button class="pill on-all" data-cat="all" onclick="setCat('all',this)">🌟 전체</button>
+        <button class="pill" data-cat="korean" onclick="setCat('korean',this)">📖 국어</button>
+        <button class="pill" data-cat="math" onclick="setCat('math',this)">🔢 수학</button>
+        <button class="pill" data-cat="history" onclick="setCat('history',this)">🏛 역사</button>
+        <button class="pill" data-cat="science" onclick="setCat('science',this)">🔬 과학</button>
+      </div>
+
+      <!-- 난이도 -->
+      <div class="pill-row" id="diff-row">
+        <button class="pill on-easy" data-diff="easy" onclick="setDiff('easy',this)">🐣 쉬움</button>
+        <button class="pill on-normal" data-diff="normal" onclick="setDiff('normal',this)">🌟 보통</button>
+        <button class="pill on-hard" data-diff="hard" onclick="setDiff('hard',this)">🔥 어려움</button>
+      </div>
+
+      <!-- 점수 현황 -->
+      <div class="stats-row">
+        <div class="chip">🏆 점수 <b id="sc">0</b></div>
+        <div class="chip">✅ <b id="sv">0</b>/<b id="tot">0</b></div>
+        <div class="chip">⏭ 넘김 <b id="sk-stat">0</b></div>
+        <div class="chip">💡 힌트 <b id="hc">0</b></div>
+        <div class="chip">🔥 콤보 <b id="cb">0</b></div>
+      </div>
+
+      <!-- 컨트롤 바 -->
+      <div class="timer-row">
+        <div class="tbox" id="tbox">⏱ --:--</div>
+        <button class="tbtn" id="tbtn" onclick="toggleTimer()">⏱ 타이머</button>
+        <button class="tbtn ta-btn" id="tabtn" onclick="toggleTA()">⏰ 타임어택</button>
+        <button class="tbtn report-btn" onclick="showReport()">📊 성적표</button>
+      </div>
+
+      <!-- 타임어택 패널 -->
+      <div class="ta-panel" id="ta-panel" style="display:none">
+        <div class="ta-info">
+          <span class="ta-label">⏰ 타임어택</span>
+          <span class="ta-time-val" id="ta-time">60초</span>
+          <span class="ta-stat">✅ <b id="ta-solved">0</b>문제</span>
+          <span class="ta-stat">🏆 <b id="ta-score">0</b>점</span>
+          <button class="ta-set-btn" id="ta-set" onclick="cycleTATime()">변경</button>
+        </div>
+        <div class="ta-bar-wrap">
+          <div class="ta-bar" id="ta-bar"></div>
         </div>
       </div>
 
-      <!-- 플래시카드 모드 -->
-      <div id="study-flash-view" style="width:100%;max-width:100%;display:none;flex-direction:column;gap:clamp(10px,1.8vh,16px);">
-        <div class="flashcard-wrap" onclick="flipCard()">
-          <div class="flashcard" id="flashcard">
-            <div class="fc-front">
-              <span class="fc-cat" id="fc-cat">📚 상식</span>
-              <div class="fc-question" id="fc-question">문제를 불러오는 중...</div>
-              <div class="fc-hint">👆 클릭해서 정답 확인!</div>
-            </div>
-            <div class="fc-back">
-              <div class="fc-ans-big o" id="fc-ans-big">O</div>
-              <div class="fc-ans-label" id="fc-ans-label">맞다 (O)</div>
-              <div class="fc-hint" style="color:rgba(255,255,255,.45);">다음 카드 → 화살표 또는 버튼</div>
-            </div>
+      <div class="combo-line" id="combo-line"></div>
+      <div class="prog-wrap"><div class="prog-bar" id="prog"></div></div>
+      <div class="board" id="board"></div>
+
+      <div class="ctrls">
+        <button class="cbtn" onclick="allHints()">💡 전체 힌트</button>
+        <button class="cbtn pri" onclick="newGame()">🔄 새 게임</button>
+      </div>
+    </div>
+
+    <!-- 라운드 결과 모달 -->
+    <div class="modal-bg" id="win-bg">
+      <div class="modal modal-wide">
+        <div class="m-emo" id="w-emo">🎉</div>
+        <div class="m-title">라운드 완료!</div>
+        <div class="m-score" id="w-score">0점</div>
+        <div class="m-rank" id="w-rank"></div>
+        <div class="m-stats">
+          <span id="w-time">⏱ --</span>
+          <span>💡 힌트 <span id="w-hc">0</span>회</span>
+          <span>🔥 최대콤보 <span id="w-mc">0</span></span>
+          <span>⏭ 넘김 <span id="w-skip">0문제</span></span>
+        </div>
+        <div class="w-items" id="w-items"></div>
+        <p class="m-note">✅ 정답 초록 · ⏭ 넘김 주황 · 힌트 적게 쓰고 빨리 풀수록 고득점! 😊</p>
+        <div class="m-btns">
+          <button class="cbtn" onclick="closeModal()">닫기</button>
+          <button class="cbtn" onclick="showReport();closeModal()">📊 성적표</button>
+          <button class="cbtn pri" onclick="newGame();closeModal()">🔄 다시하기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 타임어택 결과 모달 -->
+    <div class="modal-bg" id="ta-bg">
+      <div class="modal ta-modal">
+        <div class="ta-result-emo">⏰</div>
+        <div class="m-title">타임어택 종료!</div>
+        <div class="ta-result-grid">
+          <div class="ta-result-item">
+            <div class="ta-result-label">정답 문제</div>
+            <div class="ta-result-val" id="ta-result-solved">0</div>
+          </div>
+          <div class="ta-result-item">
+            <div class="ta-result-label">획득 점수</div>
+            <div class="ta-result-val" id="ta-result-score">0</div>
           </div>
         </div>
-      </div>
-
-      <!-- 공통 네비게이션 -->
-      <div class="study-nav" style="width:100%;max-width:100%;">
-        <button class="snav-btn prev" id="study-prev" onclick="studyNav(-1)">◀ 이전</button>
-        <span class="snav-cnt" id="study-cnt">1 / 454</span>
-        <button class="snav-btn next" id="study-next" onclick="studyNav(1)">다음 ▶</button>
-      </div>
-      <div class="study-exam-banner">
-        <div class="seb-text">
-          <strong>📝 이제 시험 볼 준비 됐나요?</strong>
-          <span>시험 보러 가자!! 지금 바로 도전! 🔥</span>
+        <div class="ta-result-rank" id="ta-result-rank"></div>
+        <div class="m-btns">
+          <button class="cbtn" onclick="closeTAResult(true);toggleTA()">모드 종료</button>
+          <button class="cbtn" onclick="showReport();closeTAResult(true)">📊 성적표</button>
+          <button class="cbtn pri" onclick="closeTAResult()">🔄 다시 도전!</button>
         </div>
-        <button class="seb-btn" onclick="switchTab('exam',null)">시험 보러 가기 →</button>
+      </div>
+    </div>
+
+    <!-- 성적표 모달 -->
+    <div class="modal-bg" id="rpt-bg">
+      <div class="modal modal-report">
+        <div class="m-title">📊 전체 과목 성적표</div>
+        <div id="rpt-body"></div>
+        <div class="m-btns">
+          <button class="cbtn pri" onclick="closeReport()">닫기</button>
+        </div>
       </div>
     </div>
 
