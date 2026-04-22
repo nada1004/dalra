@@ -771,7 +771,7 @@ function _doSwitchTab(name,btn){
   if(name==='home'){renderHomeRank && renderHomeRank();attRender && attRender();stickerRender && stickerRender();renderTodayStats && renderTodayStats();}
   if(name==='make'){const lo=document.getElementById('make-lock-overlay');if(lo)lo.style.display=adminIsLogged()?'none':'flex';}
   if(name==='school'){noticeRender && noticeRender();ttRender && ttRender();}
-  if(name==='study')initStudy && initStudy();
+  if(name==='study')initStudyGame && initStudyGame();
   if(name==='game') loadGameBests && loadGameBests();
   if(name==='exam'){
     renderQsCats && renderQsCats();
@@ -7037,6 +7037,221 @@ const TT = {
 };
 const TT_ICONS = { 1: '🍓', 2: '💖', 3: '⭐', 4: '🧸', 5: '🍭', 6: '🧁', 7: '🎀', 8: '🍑', 9: '💎' };
 const TT_COLORS = ['#ffadad', '#ffd6a5', '#fdffb6', '#caffbf', '#9bf6ff', '#a0c4ff', '#bdb2ff', '#ffc6ff', '#e2e2e2'];
+
+// ═══ 유키 퀴즈타임 (공부하기) ═══
+const STUDY = {
+  canvas: null, ctx: null, grid: [], score: 0, timeLeft: 180, gameActive: false,
+  isDragging: false, startX: 0, startY: 0, endX: 0, endY: 0, combo: 0,
+  hintCells: [], hintFlash: 0, currentMission: null, ROWS: 10, COLS: 10, SIZE: 60
+};
+const STUDY_ICONS = { 1: '🍓', 2: '💖', 3: '⭐', 4: '🧸', 5: '🍭', 6: '🧁', 7: '🎀', 8: '🍑', 9: '💎' };
+const STUDY_COLORS = ['#ffadad', '#ffd6a5', '#fdffb6', '#caffbf', '#9bf6ff', '#a0c4ff', '#bdb2ff', '#ffc6ff', '#e2e2e2'];
+const STUDY_CHAT_POOL = {
+  idle: ["열심히 공부하니 멋진데!", "오늘 컨디션 좋네", "집중하자!", "화이팅!", "잘하고 있어!"],
+  success: ["정답이야!", "와우!", "멋진데!", "좋아!", "완벽해!"],
+  fail: ["아 아쉬워", "다시 해봐", "괜찮아", "집중하자", "화이팅!"],
+  hint: ["힌트 사용했네", "수익 300원 차감", "더 열심히!", "한번 더!"],
+  gold: ["황금 아이콘!", "대박 터졌다!", "역시 운!", "럭키!", "대단해!"]
+};
+
+function initStudyGame() {
+  STUDY.canvas = document.getElementById('gameCanvas');
+  STUDY.ctx = STUDY.canvas.getContext('2d');
+  if (!STUDY.canvas) return;
+
+  STUDY.gameActive = true;
+  STUDY.score = 0;
+  STUDY.timeLeft = 180;
+  STUDY.combo = 0;
+  STUDY.grid = [];
+
+  for (let r = 0; r < STUDY.ROWS; r++) {
+    STUDY.grid[r] = [];
+    for (let c = 0; c < STUDY.COLS; c++) {
+      STUDY.grid[r][c] = { val: Math.floor(Math.random() * 9) + 1, isGold: Math.random() < 0.05 };
+    }
+  }
+
+  studySetMission();
+  studyStartTimer();
+
+  STUDY.canvas.addEventListener('mousedown', studyMouseDown);
+  STUDY.canvas.addEventListener('mousemove', studyMouseMove);
+  window.addEventListener('mouseup', studyMouseUp);
+
+  studyLoop();
+}
+
+function studySetMission() {
+  const id = Math.floor(Math.random() * 9) + 1;
+  STUDY.currentMission = { id, text: `${STUDY_ICONS[id]} 포함해서 10 만들기!` };
+  const el = document.getElementById('mission-box');
+  if (el) el.innerText = `🎁 미션: ${STUDY.currentMission.text}`;
+}
+
+function studyStartTimer() {
+  const timer = setInterval(() => {
+    if (!STUDY.gameActive) { clearInterval(timer); return; }
+    STUDY.timeLeft--;
+    if (STUDY.timeLeft <= 0) {
+      clearInterval(timer);
+      STUDY.gameActive = false;
+      studyShowResult();
+    }
+  }, 1000);
+}
+
+function studyMouseDown(e) {
+  if (!STUDY.gameActive) return;
+  STUDY.isDragging = true;
+  const rect = STUDY.canvas.getBoundingClientRect();
+  STUDY.startX = e.clientX - rect.left;
+  STUDY.startY = e.clientY - rect.top;
+  STUDY.endX = STUDY.startX;
+  STUDY.endY = STUDY.startY;
+}
+
+function studyMouseMove(e) {
+  if (!STUDY.isDragging || !STUDY.gameActive) return;
+  const rect = STUDY.canvas.getBoundingClientRect();
+  STUDY.endX = e.clientX - rect.left;
+  STUDY.endY = e.clientY - rect.top;
+}
+
+function studyMouseUp() {
+  if (!STUDY.isDragging || !STUDY.gameActive) { STUDY.isDragging = false; return; }
+  const x1 = Math.min(STUDY.startX, STUDY.endX), x2 = Math.max(STUDY.startX, STUDY.endX);
+  const y1 = Math.min(STUDY.startY, STUDY.endY), y2 = Math.max(STUDY.startY, STUDY.endY);
+  let sum = 0, sel = [], hasGold = false, metMission = false;
+
+  for (let r = 0; r < STUDY.ROWS; r++) {
+    for (let c = 0; c < STUDY.COLS; c++) {
+      const cx = c * STUDY.SIZE + STUDY.SIZE / 2, cy = r * STUDY.SIZE + STUDY.SIZE / 2;
+      if (cx >= x1 && cx <= x2 && cy >= y1 && cy <= y2 && STUDY.grid[r][c]) {
+        sum += STUDY.grid[r][c].val;
+        if (STUDY.grid[r][c].isGold) hasGold = true;
+        if (STUDY.grid[r][c].val === STUDY.currentMission.id) metMission = true;
+        sel.push({ r, c });
+      }
+    }
+  }
+
+  if (sum === 10) {
+    sel.forEach(p => STUDY.grid[p.r][p.c] = null);
+    let gain = 100;
+    if (hasGold) { gain += 1000; addStudyChat('gold'); }
+    if (metMission) { gain += 500; studySetMission(); }
+    STUDY.score += gain;
+    STUDY.combo++;
+    addStudyChat('success');
+    studyRefill();
+  } else if (sel.length > 0) {
+    addStudyChat('fail');
+  }
+
+  STUDY.isDragging = false;
+}
+
+function studyRefill() {
+  for (let c = 0; c < STUDY.COLS; c++) {
+    let empty = 0;
+    for (let r = STUDY.ROWS - 1; r >= 0; r--) {
+      if (STUDY.grid[r][c] === null) empty++;
+      else if (empty > 0) { STUDY.grid[r + empty][c] = STUDY.grid[r][c]; STUDY.grid[r][c] = null; }
+    }
+    for (let r = 0; r < empty; r++) {
+      STUDY.grid[r][c] = { val: Math.floor(Math.random() * 9) + 1, isGold: Math.random() < 0.05 };
+    }
+  }
+}
+
+function studyFindHint() {
+  if (STUDY.score < 300 || !STUDY.gameActive) return;
+  STUDY.score -= 300;
+  addStudyChat('hint');
+
+  for (let r1 = 0; r1 < STUDY.ROWS; r1++) {
+    for (let c1 = 0; c1 < STUDY.COLS; c1++) {
+      for (let r2 = r1; r2 < STUDY.ROWS; r2++) {
+        for (let c2 = c1; c2 < STUDY.COLS; c2++) {
+          let s = 0, cs = [];
+          for (let r = r1; r <= r2; r++) {
+            for (let c = c1; c <= c2; c++) {
+              if (STUDY.grid[r][c]) { s += STUDY.grid[r][c].val; cs.push({ r, c }); }
+            }
+          }
+          if (s === 10) { STUDY.hintCells = cs; STUDY.hintFlash = 30; return; }
+        }
+      }
+    }
+  }
+}
+
+function studyDraw() {
+  if (!STUDY.ctx) return;
+  STUDY.ctx.clearRect(0, 0, STUDY.canvas.width, STUDY.canvas.height);
+
+  for (let r = 0; r < STUDY.ROWS; r++) {
+    for (let c = 0; c < STUDY.COLS; c++) {
+      if (!STUDY.grid[r][c]) continue;
+      const x = c * STUDY.SIZE, y = r * STUDY.SIZE, d = STUDY.grid[r][c], color = STUDY_COLORS[d.val - 1];
+      STUDY.ctx.fillStyle = d.isGold ? '#fffde7' : color + '77';
+      STUDY.ctx.beginPath();
+      if (STUDY.ctx.roundRect) {
+        STUDY.ctx.roundRect(x + 4, y + 4, STUDY.SIZE - 8, STUDY.SIZE - 8, 15);
+      } else {
+        STUDY.ctx.rect(x + 4, y + 4, STUDY.SIZE - 8, STUDY.SIZE - 8);
+      }
+      STUDY.ctx.fill();
+
+      const isH = STUDY.hintCells.some(h => h.r === r && h.c === c);
+      STUDY.ctx.strokeStyle = isH && Math.floor(STUDY.hintFlash / 5) % 2 == 0 ? '#f44336' : (d.isGold ? '#fbc02d' : color);
+      STUDY.ctx.lineWidth = d.isGold || isH ? 4 : 2;
+      STUDY.ctx.stroke();
+
+      STUDY.ctx.font = '28px Arial';
+      STUDY.ctx.textAlign = 'center';
+      STUDY.ctx.fillText(STUDY_ICONS[d.val], x + STUDY.SIZE / 2, y + STUDY.SIZE / 2 - 6);
+      STUDY.ctx.fillStyle = d.isGold ? '#f57f17' : '#37474f';
+      STUDY.ctx.font = 'bold 22px Jua';
+      STUDY.ctx.fillText(d.val, x + STUDY.SIZE / 2, y + STUDY.SIZE / 2 + 18);
+
+      if (d.isGold) { STUDY.ctx.font = '14px Arial'; STUDY.ctx.fillText('⭐', x + STUDY.SIZE - 12, y + 15); }
+    }
+  }
+
+  if (STUDY.hintFlash > 0) STUDY.hintFlash--;
+  else STUDY.hintCells = [];
+
+  if (STUDY.isDragging) {
+    STUDY.ctx.setLineDash([5, 5]);
+    STUDY.ctx.strokeStyle = '#f06878';
+    STUDY.ctx.strokeRect(STUDY.startX, STUDY.startY, STUDY.endX - STUDY.startX, STUDY.endY - STUDY.startY);
+  }
+}
+
+function studyLoop() {
+  if (STUDY.gameActive || STUDY.grid.length > 0) studyDraw();
+  requestAnimationFrame(studyLoop);
+}
+
+function studyShowResult() {
+  const points = Math.floor(STUDY.score / 100);
+  S.points = (S.points || 0) + points;
+  alert(`🎉 게임 종료! 총 ${STUDY.score.toLocaleString()}원 수익!\n\n포인트 +${points}점 적립됨`);
+}
+
+function addStudyChat(type) {
+  const chatList = document.getElementById('chatList');
+  if (!chatList) return;
+  const text = STUDY_CHAT_POOL[type][Math.floor(Math.random() * STUDY_CHAT_POOL[type].length)];
+  const div = document.createElement('div');
+  div.style.cssText = 'margin-bottom:6px;animation:fadeIn 0.2s ease;border-bottom:1px solid #f1f1f1;padding-bottom:2px;color:#f06878;font-weight:bold;';
+  div.textContent = text;
+  chatList.appendChild(div);
+  if (chatList.children.length > 15) chatList.removeChild(chatList.firstChild);
+  chatList.scrollTop = chatList.scrollHeight;
+}
 
 function openTenTen() {
   openGame('tententen');

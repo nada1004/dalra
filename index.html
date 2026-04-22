@@ -472,122 +472,32 @@
 
     <!-- 공부하기 -->
     <div class="panel" id="panel-study">
-      <header style="text-align:center;padding:20px 0 8px;">
-        <div class="logo" style="font-size:2rem;">📖 공부하기 ✨</div>
-        <div class="sub" style="margin-top:3px;">카테고리 선택 · 난이도 선택 · 문제 풀이</div>
-      </header>
-
-      <!-- 카테고리 -->
-      <div class="pill-row" id="cat-row">
-        <button class="pill on-all" data-cat="all" onclick="setCat('all',this)">🌟 전체</button>
-        <button class="pill" data-cat="korean" onclick="setCat('korean',this)">📖 국어</button>
-        <button class="pill" data-cat="math" onclick="setCat('math',this)">🔢 수학</button>
-        <button class="pill" data-cat="history" onclick="setCat('history',this)">🏛 역사</button>
-        <button class="pill" data-cat="science" onclick="setCat('science',this)">🔬 과학</button>
-      </div>
-
-      <!-- 난이도 -->
-      <div class="pill-row" id="diff-row">
-        <button class="pill on-easy" data-diff="easy" onclick="setDiff('easy',this)">🐣 쉬움</button>
-        <button class="pill on-normal" data-diff="normal" onclick="setDiff('normal',this)">🌟 보통</button>
-        <button class="pill on-hard" data-diff="hard" onclick="setDiff('hard',this)">🔥 어려움</button>
-      </div>
-
-      <!-- 점수 현황 -->
-      <div class="stats-row">
-        <div class="chip">🏆 점수 <b id="sc">0</b></div>
-        <div class="chip">✅ <b id="sv">0</b>/<b id="tot">0</b></div>
-        <div class="chip">⏭ 넘김 <b id="sk-stat">0</b></div>
-        <div class="chip">💡 힌트 <b id="hc">0</b></div>
-        <div class="chip">🔥 콤보 <b id="cb">0</b></div>
-      </div>
-
-      <!-- 컨트롤 바 -->
-      <div class="timer-row">
-        <div class="tbox" id="tbox">⏱ --:--</div>
-        <button class="tbtn" id="tbtn" onclick="toggleTimer()">⏱ 타이머</button>
-        <button class="tbtn ta-btn" id="tabtn" onclick="toggleTA()">⏰ 타임어택</button>
-        <button class="tbtn report-btn" onclick="showReport()">📊 성적표</button>
-      </div>
-
-      <!-- 타임어택 패널 -->
-      <div class="ta-panel" id="ta-panel" style="display:none">
-        <div class="ta-info">
-          <span class="ta-label">⏰ 타임어택</span>
-          <span class="ta-time-val" id="ta-time">60초</span>
-          <span class="ta-stat">✅ <b id="ta-solved">0</b>문제</span>
-          <span class="ta-stat">🏆 <b id="ta-score">0</b>점</span>
-          <button class="ta-set-btn" id="ta-set" onclick="cycleTATime()">변경</button>
-        </div>
-        <div class="ta-bar-wrap">
-          <div class="ta-bar" id="ta-bar"></div>
-        </div>
-      </div>
-
-      <div class="combo-line" id="combo-line"></div>
-      <div class="prog-wrap"><div class="prog-bar" id="prog"></div></div>
-      <div class="board" id="board"></div>
-
-      <div class="ctrls">
-        <button class="cbtn" onclick="allHints()">💡 전체 힌트</button>
-        <button class="cbtn pri" onclick="newGame()">🔄 새 게임</button>
-      </div>
-    </div>
-
-    <!-- 라운드 결과 모달 -->
-    <div class="modal-bg" id="win-bg">
-      <div class="modal modal-wide">
-        <div class="m-emo" id="w-emo">🎉</div>
-        <div class="m-title">라운드 완료!</div>
-        <div class="m-score" id="w-score">0점</div>
-        <div class="m-rank" id="w-rank"></div>
-        <div class="m-stats">
-          <span id="w-time">⏱ --</span>
-          <span>💡 힌트 <span id="w-hc">0</span>회</span>
-          <span>🔥 최대콤보 <span id="w-mc">0</span></span>
-          <span>⏭ 넘김 <span id="w-skip">0문제</span></span>
-        </div>
-        <div class="w-items" id="w-items"></div>
-        <p class="m-note">✅ 정답 초록 · ⏭ 넘김 주황 · 힌트 적게 쓰고 빨리 풀수록 고득점! 😊</p>
-        <div class="m-btns">
-          <button class="cbtn" onclick="closeModal()">닫기</button>
-          <button class="cbtn" onclick="showReport();closeModal()">📊 성적표</button>
-          <button class="cbtn pri" onclick="newGame();closeModal()">🔄 다시하기</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 타임어택 결과 모달 -->
-    <div class="modal-bg" id="ta-bg">
-      <div class="modal ta-modal">
-        <div class="ta-result-emo">⏰</div>
-        <div class="m-title">타임어택 종료!</div>
-        <div class="ta-result-grid">
-          <div class="ta-result-item">
-            <div class="ta-result-label">정답 문제</div>
-            <div class="ta-result-val" id="ta-result-solved">0</div>
+      <div style="display:flex;gap:20px;align-items:flex-start;flex-direction:row;width:100%;height:100%;padding:20px;overflow-y:auto;box-sizing:border-box;">
+        <!-- 유키 캐릭터 -->
+        <div style="width:150px;display:flex;flex-direction:column;gap:10px;align-items:center;flex-shrink:0;">
+          <div id="yukiFrame" style="width:120px;height:120px;background:white;border-radius:50%;border:5px solid #f06878;box-shadow:0 4px 10px rgba(0,0,0,0.1);overflow:hidden;display:flex;justify-content:center;align-items:center;transition:all 0.2s;position:relative;">
+            <div style="font-size:80px;">🧊</div>
           </div>
-          <div class="ta-result-item">
-            <div class="ta-result-label">획득 점수</div>
-            <div class="ta-result-val" id="ta-result-score">0</div>
+          <div style="background:#f06878;color:white;padding:5px 15px;border-radius:20px;font-size:18px;font-weight:bold;">유키 LIVE</div>
+        </div>
+
+        <!-- 게임 컨테이너 -->
+        <div style="position:relative;flex:1;">
+          <div style="background:#ffffff;border-radius:20px;padding:15px;display:flex;flex-direction:column;text-align:left;box-shadow:0 4px 15px rgba(240,104,120,0.2);border:2px solid #ffc8d0;height:100%;overflow-y:auto;">
+            <div style="font-weight:bold;color:#f06878;margin-bottom:10px;border-bottom:2px solid #ffc8d0;font-size:22px;padding-bottom:5px;">⏱️ 시간 · 💰 수익</div>
+
+            <div id="mission-box" style="background:#ffe8f0;border:2px solid #f9a0a8;padding:8px;border-radius:15px;font-size:20px;color:#f06878;margin-bottom:10px;font-weight:bold;">시청자 미션 대기 중...</div>
+
+            <canvas id="gameCanvas" width="600" height="600" style="background:#ffffff;border:10px solid #ffffff;border-radius:30px;box-shadow:0 10px 40px rgba(240,104,120,0.2);cursor:crosshair;width:100%;height:auto;margin-bottom:12px;"></canvas>
+
+            <button class="btn-hint" onclick="studyFindHint()" style="padding:8px 30px;font-family:'Jua';font-size:22px;background:#90a4ae;color:white;border:none;border-radius:50px;cursor:pointer;width:100%;margin-top:12px;">💡 힌트 사용</button>
           </div>
         </div>
-        <div class="ta-result-rank" id="ta-result-rank"></div>
-        <div class="m-btns">
-          <button class="cbtn" onclick="closeTAResult(true);toggleTA()">모드 종료</button>
-          <button class="cbtn" onclick="showReport();closeTAResult(true)">📊 성적표</button>
-          <button class="cbtn pri" onclick="closeTAResult()">🔄 다시 도전!</button>
-        </div>
-      </div>
-    </div>
 
-    <!-- 성적표 모달 -->
-    <div class="modal-bg" id="rpt-bg">
-      <div class="modal modal-report">
-        <div class="m-title">📊 전체 과목 성적표</div>
-        <div id="rpt-body"></div>
-        <div class="m-btns">
-          <button class="cbtn pri" onclick="closeReport()">닫기</button>
+        <!-- 채팅 -->
+        <div style="width:250px;height:600px;background:rgba(255,255,255,0.85);border-radius:20px;padding:15px;display:flex;flex-direction:column;text-align:left;box-shadow:0 4px 15px rgba(240,104,120,0.2);border:2px solid #ffc8d0;flex-shrink:0;">
+          <div style="font-weight:bold;color:#f06878;margin-bottom:10px;border-bottom:2px solid #ffc8d0;font-size:22px;padding-bottom:5px;">💬 채팅</div>
+          <div id="chatList" style="flex:1;overflow-y:auto;font-size:14px;line-height:1.5;"></div>
         </div>
       </div>
     </div>
