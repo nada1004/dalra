@@ -811,38 +811,56 @@ function _doSwitchTab(name,btn){
 
 /* ══ 입학/귀가 ══ */
 function startGame(){
-  const nm=EL.nameInput.value.trim();if(!nm)return;
-  S.playerName=nm;
-  EL.dispName.textContent=nm;EL.homeName.textContent=nm;
-  // localStorage에서 사용자 문제 복원
-  try{
-    const saved=lsGetJSON(CUSTOM_QS_KEY,[]);
-    if(saved.length){
-      S.customQs=saved;
-      saved.forEach(q=>{if(!ALL_QS.some(a=>a[0]===q[0]))ALL_QS.push(q);});
-    }
-  }catch(e){}
-  EL.nameScreen.style.display='none';EL.app.style.display='flex';
-  // 아바타 이모지 - 이름 첫 글자 기반 배정
-  const AVATARS = ['🐰','🐻','🦁','🐸','🐯','🐼','🦊','🐨','🐹','🦉','🐧','🦋'];
-  const avatarIdx = S.playerName.charCodeAt(0) % AVATARS.length;
-  const avatarEl = document.getElementById('sbar-avatar');
-  if(avatarEl) avatarEl.textContent = AVATARS[avatarIdx];
-  // 하트 초기화 (MAX_LIVES 기반)
-  if(EL.sbarHearts) EL.sbarHearts.textContent='❤️'.repeat(MAX_LIVES);
-  // XP바는 updateLevel()에서 처리
-  switchTab('home',document.querySelectorAll('.tab')[0]);
-  renderHomeRank();
-  attRender();
-  initDailyWord();
-  initWelcomeBanner();
-  renderDailyMissions();
-  initTodayQuiz();
-  stickerRender();
-  updateWrongBtn();
-  initFontSize();
-  // 입학 환영 메시지
-  setTimeout(()=>showMascotCheer(S.playerName+'님 환영해요! 오늘도 열심히 해봐요 🎒'), 800);
+  try {
+    const nm = EL.nameInput.value.trim();
+    if (!nm) return;
+    S.playerName = nm;
+    EL.dispName.textContent = nm;
+    EL.homeName.textContent = nm;
+
+    // localStorage에서 사용자 문제 복원
+    try {
+      const saved = lsGetJSON(CUSTOM_QS_KEY, []);
+      if (saved.length) {
+        S.customQs = saved;
+        saved.forEach(q => { if (!ALL_QS.some(a => a[0] === q[0])) ALL_QS.push(q); });
+      }
+    } catch (e) { console.warn('Custom questions restore failed:', e); }
+
+    // 화면 전환
+    if (EL.nameScreen) EL.nameScreen.style.display = 'none';
+    if (EL.app) EL.app.style.display = 'flex';
+
+    // 아바타 이모지 - 이름 첫 글자 기반 배정
+    const AVATARS = ['🐰', '🐻', '🦁', '🐸', '🐯', '🐼', '🦊', '🐨', '🐹', '🦉', '🐧', '🦋'];
+    const avatarIdx = S.playerName.charCodeAt(0) % AVATARS.length;
+    const avatarEl = document.getElementById('sbar-avatar');
+    if (avatarEl) avatarEl.textContent = AVATARS[avatarIdx];
+
+    // 하트 초기화 (MAX_LIVES 기반)
+    if (EL.sbarHearts) EL.sbarHearts.textContent = '❤️'.repeat(MAX_LIVES);
+
+    // 탭 전환
+    const tabs = document.querySelectorAll('.tab');
+    if (tabs.length > 0) switchTab('home', tabs[0]);
+
+    // 초기화 함수 호출 (각각 try-catch로 보호)
+    try { renderHomeRank(); } catch (e) { console.warn('renderHomeRank failed:', e); }
+    try { attRender(); } catch (e) { console.warn('attRender failed:', e); }
+    try { initDailyWord(); } catch (e) { console.warn('initDailyWord failed:', e); }
+    try { initWelcomeBanner(); } catch (e) { console.warn('initWelcomeBanner failed:', e); }
+    try { renderDailyMissions(); } catch (e) { console.warn('renderDailyMissions failed:', e); }
+    try { initTodayQuiz(); } catch (e) { console.warn('initTodayQuiz failed:', e); }
+    try { stickerRender(); } catch (e) { console.warn('stickerRender failed:', e); }
+    try { updateWrongBtn(); } catch (e) { console.warn('updateWrongBtn failed:', e); }
+    try { initFontSize(); } catch (e) { console.warn('initFontSize failed:', e); }
+
+    // 입학 환영 메시지
+    setTimeout(() => showMascotCheer(S.playerName + '님 환영해요! 오늘도 열심히 해봐요 🎒'), 800);
+  } catch (e) {
+    console.error('startGame error:', e);
+    alert('입학 중 오류가 발생했습니다: ' + e.message);
+  }
 }
 function goHome(){
   stopTimer();EL.ov.classList.remove('on');
