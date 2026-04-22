@@ -6918,18 +6918,15 @@ function showWin() {
   if (!modal) return;
 
   const score = document.getElementById('w-score');
-  const stats = document.getElementById('w-stats');
+  const hc = document.getElementById('w-hc');
+  const mc = document.getElementById('w-mc');
+  const skip = document.getElementById('w-skip');
   const items = document.getElementById('w-items');
 
   if (score) score.textContent = QZ.score + '점';
-  if (stats) {
-    stats.innerHTML = `
-      <span id="w-time">⏱ --</span>
-      <span>💡 힌트 <span id="w-hc">${QZ.hints}</span>회</span>
-      <span>🔥 최대콤보 <span id="w-mc">${QZ.combo}</span></span>
-      <span>⏭ 넘김 <span id="w-skip">${QZ.skips}문제</span></span>
-    `;
-  }
+  if (hc) hc.textContent = QZ.hints;
+  if (mc) mc.textContent = QZ.combo;
+  if (skip) skip.textContent = QZ.skips + '문제';
 
   if (items) {
     items.innerHTML = QZ.answers.map(ans => `
