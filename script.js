@@ -7012,24 +7012,213 @@ function newGame() {
 }
 
 // ═══ 텐텐 게임 시스템 ═══
-const TT={canvas:null,ctx:null,grid:[],score:0,timeLeft:180,gameActive:false,isDragging:false,startX:0,startY:0,endX:0,endY:0,combo:0,hintCells:[],hintFlash:0,currentMission:null,ROWS:10,COLS:10,SIZE:60};
-const TT_ICONS={1:'🍓',2:'💖',3:'⭐',4:'🧸',5:'🍭',6:'🧁',7:'🎀',8:'🍑',9:'💎'};
-const TT_COLORS=['#ffadad','#ffd6a5','#fdffb6','#caffbf','#9bf6ff','#a0c4ff','#bdb2ff','#ffc6ff','#e2e2e2'];
-function openTenTen(){openGame('tententen');const el=document.getElementById('game-tententen');if(!el)return;TT.canvas=document.getElementById('tt-canvas');TT.ctx=TT.canvas.getContext('2d');TT.gameActive=true;ttInitGame();}
-function closeTenTen(){closeGame('tententen');}
-function retryTenTen(){document.getElementById('tententen-result').style.display='none';openTenTen();}
-function ttInitGame(){TT.score=0;TT.timeLeft=180;TT.combo=0;TT.grid=[];for(let r=0;r<TT.ROWS;r++){TT.grid[r]=[];for(let c=0;c<TT.COLS;c++)TT.grid[r][c]={val:Math.floor(Math.random()*9)+1,isGold:Math.random()<0.05};}ttSetMission();ttUpdateUI();ttStartTimer();if(TT.canvas){TT.canvas.addEventListener('mousedown',ttMouseDown);TT.canvas.addEventListener('mousemove',ttMouseMove);window.addEventListener('mouseup',ttMouseUp);}ttLoop();}
-function ttSetMission(){const id=Math.floor(Math.random()*9)+1;TT.currentMission={id,text:`${TT_ICONS[id]} 포함해서 10 만들기!`};const el=document.getElementById('tt-mission');if(el)el.innerText=`🎁 미션: ${TT.currentMission.text}`;}
-function ttUpdateUI(){document.getElementById('tt-score').innerText=TT.score.toLocaleString();const min=Math.floor(TT.timeLeft/60),sec=TT.timeLeft%60;document.getElementById('tt-timer').innerText=`${min.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;}
-function ttStartTimer(){let t=TT.timeLeft;const timer=setInterval(()=>{if(!TT.gameActive){clearInterval(timer);return;}TT.timeLeft--;ttUpdateUI();if(TT.timeLeft<=0){clearInterval(timer);TT.gameActive=false;ttShowResult();}},1000);}
-function ttMouseDown(e){if(!TT.gameActive)return;TT.isDragging=true;const rect=TT.canvas.getBoundingClientRect();TT.startX=e.clientX-rect.left;TT.startY=e.clientY-rect.top;TT.endX=TT.startX;TT.endY=TT.startY;}
-function ttMouseMove(e){if(!TT.isDragging||!TT.gameActive)return;const rect=TT.canvas.getBoundingClientRect();TT.endX=e.clientX-rect.left;TT.endY=e.clientY-rect.top;}
-function ttMouseUp(){if(!TT.isDragging||!TT.gameActive){TT.isDragging=false;return;}const x1=Math.min(TT.startX,TT.endX),x2=Math.max(TT.startX,TT.endX),y1=Math.min(TT.startY,TT.endY),y2=Math.max(TT.startY,TT.endY);let sum=0,sel=[],hasGold=false,metMission=false;for(let r=0;r<TT.ROWS;r++){for(let c=0;c<TT.COLS;c++){const cx=c*TT.SIZE+TT.SIZE/2,cy=r*TT.SIZE+TT.SIZE/2;if(cx>=x1&&cx<=x2&&cy>=y1&&cy<=y2&&TT.grid[r][c]){sum+=TT.grid[r][c].val;if(TT.grid[r][c].isGold)hasGold=true;if(TT.grid[r][c].val===TT.currentMission.id)metMission=true;sel.push({r,c});}}}if(sum===10){sel.forEach(p=>TT.grid[p.r][p.c]=null);let gain=100;if(hasGold)gain+=1000;if(metMission){gain+=500;ttSetMission();}TT.score+=gain;TT.combo++;ttUpdateUI();ttRefill();}TT.isDragging=false;}
-function ttRefill(){for(let c=0;c<TT.COLS;c++){let empty=0;for(let r=TT.ROWS-1;r>=0;r--){if(TT.grid[r][c]===null)empty++;else if(empty>0){TT.grid[r+empty][c]=TT.grid[r][c];TT.grid[r][c]=null;}}for(let r=0;r<empty;r++)TT.grid[r][c]={val:Math.floor(Math.random()*9)+1,isGold:Math.random()<0.05};}}
-function ttUseHint(){if(TT.score<200||!TT.gameActive)return;TT.score-=200;ttUpdateUI();for(let r1=0;r1<TT.ROWS;r1++){for(let c1=0;c1<TT.COLS;c1++){for(let r2=r1;r2<TT.ROWS;r2++){for(let c2=c1;c2<TT.COLS;c2++){let s=0,cs=[];for(let r=r1;r<=r2;r++){for(let c=c1;c<=c2;c++){if(TT.grid[r][c]){s+=TT.grid[r][c].val;cs.push({r,c});}}}if(s===10){TT.hintCells=cs;TT.hintFlash=30;return;}}}}}
-function ttDraw(){if(!TT.ctx)return;TT.ctx.clearRect(0,0,TT.canvas.width,TT.canvas.height);for(let r=0;r<TT.ROWS;r++){for(let c=0;c<TT.COLS;c++){if(!TT.grid[r][c])continue;const x=c*TT.SIZE,y=r*TT.SIZE,d=TT.grid[r][c],color=TT_COLORS[d.val-1];TT.ctx.fillStyle=d.isGold?'#fffde7':color+'77';TT.ctx.beginPath();TT.ctx.roundRect(x+4,y+4,TT.SIZE-8,TT.SIZE-8,15);TT.ctx.fill();const isH=TT.hintCells.some(h=>h.r===r&&h.c===c);TT.ctx.strokeStyle=isH&&Math.floor(TT.hintFlash/5)%2==0?'#f44336':(d.isGold?'#fbc02d':color);TT.ctx.lineWidth=d.isGold||isH?4:2;TT.ctx.stroke();TT.ctx.font='28px Arial';TT.ctx.textAlign='center';TT.ctx.fillText(TT_ICONS[d.val],x+TT.SIZE/2,y+TT.SIZE/2-6);TT.ctx.fillStyle=d.isGold?'#f57f17':'#37474f';TT.ctx.font='bold 22px Jua';TT.ctx.fillText(d.val,x+TT.SIZE/2,y+TT.SIZE/2+18);if(d.isGold){TT.ctx.font='14px Arial';TT.ctx.fillText('⭐',x+TT.SIZE-12,y+15);}}}if(TT.hintFlash>0)TT.hintFlash--;else TT.hintCells=[];if(TT.isDragging){TT.ctx.setLineDash([5,5]);TT.ctx.strokeStyle='#f06878';TT.ctx.strokeRect(TT.startX,TT.startY,TT.endX-TT.startX,TT.endY-TT.startY);}}
-function ttLoop(){if(TT.gameActive||TT.grid.length>0)ttDraw();requestAnimationFrame(ttLoop);}
-function ttShowResult(){const resultEl=document.getElementById('tententen-result');if(resultEl){resultEl.style.display='flex';document.getElementById('tt-result-score').innerText=TT.score.toLocaleString()+'원';}S.points=(S.points||0)+Math.floor(TT.score/100);}
+const TT = {
+  canvas: null, ctx: null, grid: [], score: 0, timeLeft: 180, gameActive: false,
+  isDragging: false, startX: 0, startY: 0, endX: 0, endY: 0, combo: 0,
+  hintCells: [], hintFlash: 0, currentMission: null, ROWS: 10, COLS: 10, SIZE: 60
+};
+const TT_ICONS = { 1: '🍓', 2: '💖', 3: '⭐', 4: '🧸', 5: '🍭', 6: '🧁', 7: '🎀', 8: '🍑', 9: '💎' };
+const TT_COLORS = ['#ffadad', '#ffd6a5', '#fdffb6', '#caffbf', '#9bf6ff', '#a0c4ff', '#bdb2ff', '#ffc6ff', '#e2e2e2'];
+
+function openTenTen() {
+  openGame('tententen');
+  const el = document.getElementById('game-tententen');
+  if (!el) return;
+  TT.canvas = document.getElementById('tt-canvas');
+  TT.ctx = TT.canvas.getContext('2d');
+  TT.gameActive = true;
+  ttInitGame();
+}
+
+function closeTenTen() { closeGame('tententen'); }
+
+function retryTenTen() {
+  const resultEl = document.getElementById('tententen-result');
+  if (resultEl) resultEl.style.display = 'none';
+  openTenTen();
+}
+
+function ttInitGame() {
+  TT.score = 0;
+  TT.timeLeft = 180;
+  TT.combo = 0;
+  TT.grid = [];
+  for (let r = 0; r < TT.ROWS; r++) {
+    TT.grid[r] = [];
+    for (let c = 0; c < TT.COLS; c++) {
+      TT.grid[r][c] = { val: Math.floor(Math.random() * 9) + 1, isGold: Math.random() < 0.05 };
+    }
+  }
+  ttSetMission();
+  ttUpdateUI();
+  ttStartTimer();
+  if (TT.canvas) {
+    TT.canvas.addEventListener('mousedown', ttMouseDown);
+    TT.canvas.addEventListener('mousemove', ttMouseMove);
+    window.addEventListener('mouseup', ttMouseUp);
+  }
+  ttLoop();
+}
+
+function ttSetMission() {
+  const id = Math.floor(Math.random() * 9) + 1;
+  TT.currentMission = { id, text: `${TT_ICONS[id]} 포함해서 10 만들기!` };
+  const el = document.getElementById('tt-mission');
+  if (el) el.innerText = `🎁 미션: ${TT.currentMission.text}`;
+}
+
+function ttUpdateUI() {
+  const scoreEl = document.getElementById('tt-score');
+  const timerEl = document.getElementById('tt-timer');
+  if (scoreEl) scoreEl.innerText = TT.score.toLocaleString();
+  if (timerEl) {
+    const min = Math.floor(TT.timeLeft / 60);
+    const sec = TT.timeLeft % 60;
+    timerEl.innerText = `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+  }
+}
+
+function ttStartTimer() {
+  const timer = setInterval(() => {
+    if (!TT.gameActive) { clearInterval(timer); return; }
+    TT.timeLeft--;
+    ttUpdateUI();
+    if (TT.timeLeft <= 0) {
+      clearInterval(timer);
+      TT.gameActive = false;
+      ttShowResult();
+    }
+  }, 1000);
+}
+
+function ttMouseDown(e) {
+  if (!TT.gameActive) return;
+  TT.isDragging = true;
+  const rect = TT.canvas.getBoundingClientRect();
+  TT.startX = e.clientX - rect.left;
+  TT.startY = e.clientY - rect.top;
+  TT.endX = TT.startX;
+  TT.endY = TT.startY;
+}
+
+function ttMouseMove(e) {
+  if (!TT.isDragging || !TT.gameActive) return;
+  const rect = TT.canvas.getBoundingClientRect();
+  TT.endX = e.clientX - rect.left;
+  TT.endY = e.clientY - rect.top;
+}
+
+function ttMouseUp() {
+  if (!TT.isDragging || !TT.gameActive) { TT.isDragging = false; return; }
+  const x1 = Math.min(TT.startX, TT.endX), x2 = Math.max(TT.startX, TT.endX);
+  const y1 = Math.min(TT.startY, TT.endY), y2 = Math.max(TT.startY, TT.endY);
+  let sum = 0, sel = [], hasGold = false, metMission = false;
+  for (let r = 0; r < TT.ROWS; r++) {
+    for (let c = 0; c < TT.COLS; c++) {
+      const cx = c * TT.SIZE + TT.SIZE / 2, cy = r * TT.SIZE + TT.SIZE / 2;
+      if (cx >= x1 && cx <= x2 && cy >= y1 && cy <= y2 && TT.grid[r][c]) {
+        sum += TT.grid[r][c].val;
+        if (TT.grid[r][c].isGold) hasGold = true;
+        if (TT.grid[r][c].val === TT.currentMission.id) metMission = true;
+        sel.push({ r, c });
+      }
+    }
+  }
+  if (sum === 10) {
+    sel.forEach(p => TT.grid[p.r][p.c] = null);
+    let gain = 100;
+    if (hasGold) gain += 1000;
+    if (metMission) { gain += 500; ttSetMission(); }
+    TT.score += gain;
+    TT.combo++;
+    ttUpdateUI();
+    ttRefill();
+  }
+  TT.isDragging = false;
+}
+
+function ttRefill() {
+  for (let c = 0; c < TT.COLS; c++) {
+    let empty = 0;
+    for (let r = TT.ROWS - 1; r >= 0; r--) {
+      if (TT.grid[r][c] === null) empty++;
+      else if (empty > 0) { TT.grid[r + empty][c] = TT.grid[r][c]; TT.grid[r][c] = null; }
+    }
+    for (let r = 0; r < empty; r++) TT.grid[r][c] = { val: Math.floor(Math.random() * 9) + 1, isGold: Math.random() < 0.05 };
+  }
+}
+
+function ttUseHint() {
+  if (TT.score < 200 || !TT.gameActive) return;
+  TT.score -= 200;
+  ttUpdateUI();
+  for (let r1 = 0; r1 < TT.ROWS; r1++) {
+    for (let c1 = 0; c1 < TT.COLS; c1++) {
+      for (let r2 = r1; r2 < TT.ROWS; r2++) {
+        for (let c2 = c1; c2 < TT.COLS; c2++) {
+          let s = 0, cs = [];
+          for (let r = r1; r <= r2; r++) {
+            for (let c = c1; c <= c2; c++) {
+              if (TT.grid[r][c]) { s += TT.grid[r][c].val; cs.push({ r, c }); }
+            }
+          }
+          if (s === 10) { TT.hintCells = cs; TT.hintFlash = 30; return; }
+        }
+      }
+    }
+  }
+}
+
+function ttDraw() {
+  if (!TT.ctx) return;
+  TT.ctx.clearRect(0, 0, TT.canvas.width, TT.canvas.height);
+  for (let r = 0; r < TT.ROWS; r++) {
+    for (let c = 0; c < TT.COLS; c++) {
+      if (!TT.grid[r][c]) continue;
+      const x = c * TT.SIZE, y = r * TT.SIZE, d = TT.grid[r][c], color = TT_COLORS[d.val - 1];
+      TT.ctx.fillStyle = d.isGold ? '#fffde7' : color + '77';
+      TT.ctx.beginPath();
+      if (TT.ctx.roundRect) {
+        TT.ctx.roundRect(x + 4, y + 4, TT.SIZE - 8, TT.SIZE - 8, 15);
+      } else {
+        TT.ctx.rect(x + 4, y + 4, TT.SIZE - 8, TT.SIZE - 8);
+      }
+      TT.ctx.fill();
+      const isH = TT.hintCells.some(h => h.r === r && h.c === c);
+      TT.ctx.strokeStyle = isH && Math.floor(TT.hintFlash / 5) % 2 == 0 ? '#f44336' : (d.isGold ? '#fbc02d' : color);
+      TT.ctx.lineWidth = d.isGold || isH ? 4 : 2;
+      TT.ctx.stroke();
+      TT.ctx.font = '28px Arial';
+      TT.ctx.textAlign = 'center';
+      TT.ctx.fillText(TT_ICONS[d.val], x + TT.SIZE / 2, y + TT.SIZE / 2 - 6);
+      TT.ctx.fillStyle = d.isGold ? '#f57f17' : '#37474f';
+      TT.ctx.font = 'bold 22px Jua';
+      TT.ctx.fillText(d.val, x + TT.SIZE / 2, y + TT.SIZE / 2 + 18);
+      if (d.isGold) { TT.ctx.font = '14px Arial'; TT.ctx.fillText('⭐', x + TT.SIZE - 12, y + 15); }
+    }
+  }
+  if (TT.hintFlash > 0) TT.hintFlash--;
+  else TT.hintCells = [];
+  if (TT.isDragging) {
+    TT.ctx.setLineDash([5, 5]);
+    TT.ctx.strokeStyle = '#f06878';
+    TT.ctx.strokeRect(TT.startX, TT.startY, TT.endX - TT.startX, TT.endY - TT.startY);
+  }
+}
+
+function ttLoop() {
+  if (TT.gameActive || TT.grid.length > 0) ttDraw();
+  requestAnimationFrame(ttLoop);
+}
+
+function ttShowResult() {
+  const resultEl = document.getElementById('tententen-result');
+  if (resultEl) {
+    resultEl.style.display = 'flex';
+    document.getElementById('tt-result-score').innerText = TT.score.toLocaleString() + '원';
+  }
+  S.points = (S.points || 0) + Math.floor(TT.score / 100);
+}
 
 // 초기화 (DOM 준비 시)
 if (document.readyState === 'loading') {
