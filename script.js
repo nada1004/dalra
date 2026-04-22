@@ -6371,6 +6371,7 @@ function renderBoard() {
     </div>
     <div class="sb-question">${esc(q.q)}</div>
     ${q.h ? `<div class="sb-hint-box" id="hint-box" style="display:none">💡 ${q.h}</div>` : ''}
+    <div style="flex:1;"></div>
     <div class="sb-input-wrap">
       <input class="sb-input" id="answer-input" type="text"
         placeholder="정답을 입력하세요"
