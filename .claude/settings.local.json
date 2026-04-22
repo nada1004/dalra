@@ -1,7 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(node -c script.js)"
+      "Bash(node -c script.js)",
+      "Read(//c/Users/nicek/.claude/projects/d--projects---/**)",
+      "Bash(python3)",
+      "Bash(node -c qdb.js)"
     ]
   }
 }

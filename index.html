@@ -104,7 +104,6 @@
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
           <button class="admin-btn red" onclick="adminResetRank()">🏆 랭킹 초기화</button>
           <button class="admin-btn red" onclick="adminResetStats()">📊 통계 초기화</button>
-          <button class="admin-btn red" onclick="adminResetWrong()">📕 오답노트 초기화</button>
           <button class="admin-btn red" onclick="adminResetAll()">⚠️ 전체 초기화</button>
         </div>
       </div>
@@ -138,7 +137,6 @@
       </div>
       <button class="snd-btn" id="snd-toggle" onclick="toggleSound()">🔊</button>
       <button class="snd-btn" id="dark-toggle" onclick="toggleDark()" title="다크모드">🌙</button>
-      <button class="hd-btn r" id="hd-restart-btn" style="display:none;" onclick="restartQuiz()">🔄 재시작</button>
       <button class="hd-btn h" onclick="goHome()">🏠 처음으로</button>
     </div>
   </div>
@@ -178,7 +176,6 @@
     <button class="tab on" role="tab" aria-selected="true" onclick="switchTab('home',this)">🏠 홈</button>
     <button class="tab" role="tab" aria-selected="false" onclick="switchTab('school',this)">🏫 학급생활</button>
     <button class="tab" role="tab" aria-selected="false" onclick="switchTab('study',this)">📖 공부하기</button>
-    <button class="tab" id="tab-exam" role="tab" aria-selected="false" onclick="switchTab('exam',this)">📝 시험·오답<span class="tab-badge" id="tab-badge-wrong" style="display:none"></span></button>
     <button class="tab" role="tab" aria-selected="false" onclick="switchTab('game',this)">🎮 게임하기</button>
     <button class="tab" role="tab" aria-selected="false" onclick="switchTab('media',this)">🎵 미디어</button>
     <button class="tab" role="tab" aria-selected="false" onclick="switchTab('rankstats',this)">🏆 랭킹·통계</button>
@@ -214,29 +211,12 @@
             <div class="hc-desc">문제와 정답을 미리 보며<br>차근차근 공부해요</div>
             <button class="hc-btn">📖 공부 시작!</button>
           </div>
-          <div class="home-card exam" onclick="switchTab('exam',null)">
-            <div class="hc-icon">📝</div>
-            <div class="hc-title">시험 보기</div>
-            <div class="hc-desc">실력을 확인할 시간!<br>시험 보러 가자!! 🔥</div>
-            <button class="hc-btn">📝 시험 보러 가기!</button>
-          </div>
           <div class="home-card game" onclick="switchTab('game',null)">
             <div class="hc-icon">🎮</div>
             <div class="hc-title">게임하기</div>
             <div class="hc-desc">재미있는 게임으로<br>즐겁게 배워요</div>
             <button class="hc-btn">🎮 게임 하러 가기!</button>
           </div>
-        </div>
-        <!-- 오늘의 퀴즈 배너 -->
-        <div class="today-quiz-banner" id="today-quiz-banner">
-          <div class="tqb-left">
-            <div class="tqb-icon">🌟</div>
-            <div class="tqb-text">
-              <strong>오늘의 퀴즈 도전!</strong>
-              <span id="tqb-desc">매일 새로운 5문제에 도전해봐요</span>
-            </div>
-          </div>
-          <button class="tqb-btn" id="tqb-btn" onclick="startTodayQuiz()">도전하기 →</button>
         </div>
         <!-- 오늘의 학습 요약 (최근 기록) -->
         <div class="today-stats-card" id="today-stats-card">
@@ -253,10 +233,6 @@
             <div class="tsc-item">
               <div class="tsc-val" id="tsc-combo">0</div>
               <div class="tsc-lbl">최고 콤보</div>
-            </div>
-            <div class="tsc-item">
-              <div class="tsc-val" id="tsc-wrong">0</div>
-              <div class="tsc-lbl">오답 누적</div>
             </div>
           </div>
         </div>
@@ -787,125 +763,6 @@
     </div>
 
     <!-- 시험 (퀴즈) -->
-    <!-- 📝 시험·오답 통합 패널 -->
-    <div class="panel" id="panel-exam-quiz">
-      <!-- 서브탭 -->
-      <div class="exam-subtabs">
-        <button class="exam-stab on" id="etab-quiz" onclick="examSubTab('quiz',this)">📝 시험 보기</button>
-        <button class="exam-stab" id="etab-wrong" onclick="examSubTab('wrong',this)">📕 오답 노트</button>
-      </div>
-      <!-- 시험 섹션 -->
-      <div class="exam-sub-panel" id="exam-sub-quiz">
-      <!-- ① 시험 설정 화면 -->
-      <div class="quiz-ready" id="quiz-ready" style="align-items:center;text-align:center;max-width:100%;width:100%;">
-        <div class="quiz-setup" style="width:100%;max-width:100%;">
-          <div class="qr-icon" style="align-self:center;">📝</div>
-          <div class="qs-title">시험 설정</div>
-          <div class="qs-subtitle">카테고리, 문제 수, 시간을 골라봐요!</div>
-
-          <!-- 카테고리 -->
-          <div class="qs-section">
-            <div class="qs-sec-title">📂 카테고리 선택</div>
-            <div class="qs-cats" id="qs-cats">
-              <!-- JS로 렌더링 -->
-            </div>
-          </div>
-
-          <!-- 문제 수 -->
-          <div class="qs-section">
-            <div class="qs-sec-title">📝 문제 수</div>
-            <div class="qs-pills" id="qs-cnt-pills">
-              <button class="qs-pill" onclick="setQCount(10,this)">10개</button>
-              <button class="qs-pill on" onclick="setQCount(20,this)">20개</button>
-              <button class="qs-pill" onclick="setQCount(30,this)">30개</button>
-              <button class="qs-pill" onclick="setQCount(9999,this)">전체</button>
-            </div>
-          </div>
-
-          <!-- 시간 -->
-          <div class="qs-section">
-            <div class="qs-sec-title">⏱ 문제당 제한 시간</div>
-            <div class="qs-pills" id="qs-time-pills">
-              <button class="qs-pill" onclick="setQTime(10,this)">10초</button>
-              <button class="qs-pill on" onclick="setQTime(15,this)">15초</button>
-              <button class="qs-pill" onclick="setQTime(20,this)">20초</button>
-              <button class="qs-pill" onclick="setQTime(0,this)">무제한</button>
-            </div>
-          </div>
-
-          <div id="qs-preview" style="text-align:center;font-size:clamp(13px,1.8vw,16px);color:var(--blue);font-weight:700;padding:10px 0 4px;letter-spacing:.02em;">📋 총 20문제 출제 예정</div>
-          <div class="qs-start-row">
-            <button class="qs-start-btn" onclick="startQuiz()">🚀 시험 시작!</button>
-            <button class="qs-wrong-btn" id="qs-wrong-btn" onclick="startWrongQuiz()">📕 오답만 풀기</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="quiz-playing" id="quiz-playing">
-        <!-- 응원 메시지 바 -->
-        <div class="quiz-cheer-bar" id="quiz-cheer-bar"></div>
-        <!-- 칠판: 문제 중앙 정렬 -->
-        <div class="board" id="board">
-          <div class="b-top">
-            <span class="blbl" id="blbl">📚 상식</span>
-            <span class="qnum" id="qnum">1 / 400</span>
-          </div>
-          <div class="qtxt" id="qtxt">문제를 불러오는 중이에요 🎒</div>
-          <div class="board-chalk">
-            <span style="width:32px;height:8px;background:#fffde7;opacity:.6;"></span>
-            <span style="width:20px;height:8px;background:#f8a8b0;opacity:.5;"></span>
-            <span style="width:24px;height:8px;background:#93c5fd;opacity:.5;"></span>
-          </div>
-        </div>
-
-        <div class="fb" id="fb"></div>
-        <div class="gom" id="gom">💔 목숨을 모두 잃었어요!</div>
-
-        <div class="meta-row">
-          <div class="lives" id="lives">❤️❤️❤️</div>
-          <div class="combo" id="combo">🔥 COMBO</div>
-        </div>
-
-        <div class="scards">
-          <div class="sc c"><div class="sc-lbl">✅ 정답</div><div class="sc-val" id="sc">0</div></div>
-          <div class="sc w"><div class="sc-lbl">❌ 오답</div><div class="sc-val" id="sw">0</div></div>
-          <div class="sc m"><div class="sc-lbl">🔥 최고콤보</div><div class="sc-val" id="smx">0</div></div>
-          <div class="sc"><div class="sc-lbl">⚡ 현재콤보</div><div class="sc-val" id="scur">0</div></div>
-        </div>
-
-        <div class="prog-row"><span id="piv">1/400</span><span id="ppct">0%</span></div>
-
-        <!-- OX 카드 (책상 대체) -->
-        <div class="ox-card-area">
-          <button class="ox-card oo-card" id="bo" onclick="ans(true)">
-            <div class="ox-card-icon">O</div>
-            <div class="ox-card-label">맞아요!</div>
-            <div class="ox-card-sublabel">이 문장은 사실이에요</div>
-            <div class="ox-card-key">Z / ←</div>
-          </button>
-          <button class="ox-card xx-card" id="bx" onclick="ans(false)">
-            <div class="ox-card-icon">X</div>
-            <div class="ox-card-label">틀려요!</div>
-            <div class="ox-card-sublabel">이 문장은 거짓이에요</div>
-            <div class="ox-card-key">/ / →</div>
-          </button>
-        </div>
-      </div>
-      </div><!-- end exam-sub-quiz -->
-      <!-- 오답노트 섹션 -->
-      <div class="exam-sub-panel" id="exam-sub-wrong" style="display:none;width:100%;">
-        <!-- 오답노트 내용 (panel-exam-wrong에서 이동) -->
-        <div class="wn-header">
-          <div class="wn-title">📕 오답 노트</div>
-          <span class="wn-count" id="wn-count">0개</span>
-        </div>
-        <div class="wn-actions">
-          <button class="wn-retry-btn" id="wn-retry-btn" onclick="startWrongQuiz()" disabled>🔄 오답만 다시 풀기</button>
-          <button class="wn-clear-btn" onclick="clearWrongNote()">🗑 전체 삭제</button>
-        </div>
-        <div id="wn-list2"><div class="wn-empty">아직 오답이 없어요 🎉<br>시험을 보면 틀린 문제가 여기에 쌓여요!</div></div>
-      </div>
-    </div>
 
     <!-- 게임 허브 -->
     <div class="panel" id="panel-game">
@@ -1089,7 +946,6 @@
         <div class="cq-list" id="custom-list"><div class="cq-empty">아직 만든 문제가 없어요 ✏️</div></div>
       </div>
       <div class="make-actions">
-        <button class="use-btn" onclick="useCustomQ()">🚀 내 문제로 시험 보기!</button>
         <button class="clr-btn" onclick="clearCustomQ()">🗑 전체 삭제</button>
       </div>
     </div>
@@ -1571,8 +1427,7 @@
             <div id="custom-list2" style="display:flex;flex-direction:column;gap:6px;"></div>
           </div>
           <div style="display:flex;gap:8px;margin-top:10px;">
-            <button onclick="useCustomQ()" style="flex:1;padding:11px;font-size:14px;font-family:'Jua',sans-serif;background:linear-gradient(135deg,#34c498,#16a34a);border:none;border-radius:12px;color:#fff;cursor:pointer;font-weight:900;">🚀 내 문제로 시험 보기</button>
-            <button onclick="clearCustomQ()" style="padding:11px 16px;font-size:14px;font-family:'Jua',sans-serif;background:#f1f5f9;border:1.5px solid #e2e8f0;border-radius:12px;color:#64748b;cursor:pointer;">🗑 전체 삭제</button>
+            <button onclick="clearCustomQ()" style="flex:1;padding:11px 16px;font-size:14px;font-family:'Jua',sans-serif;background:#f1f5f9;border:1.5px solid #e2e8f0;border-radius:12px;color:#64748b;cursor:pointer;">🗑 전체 삭제</button>
           </div>
         </div>
 
@@ -1612,7 +1467,6 @@
             <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">
               <button onclick="adminResetRank()" style="padding:10px 16px;font-size:13px;font-family:'Jua',sans-serif;background:#fde8e8;color:#d04050;border:none;border-radius:10px;cursor:pointer;font-weight:700;">🏆 랭킹 초기화</button>
               <button onclick="adminResetStats()" style="padding:10px 16px;font-size:13px;font-family:'Jua',sans-serif;background:#fde8e8;color:#d04050;border:none;border-radius:10px;cursor:pointer;font-weight:700;">📊 통계 초기화</button>
-              <button onclick="adminResetWrong()" style="padding:10px 16px;font-size:13px;font-family:'Jua',sans-serif;background:#fde8e8;color:#d04050;border:none;border-radius:10px;cursor:pointer;font-weight:700;">📕 오답 초기화</button>
               <button onclick="adminResetAll()" style="padding:10px 16px;font-size:13px;font-family:'Jua',sans-serif;background:#701828;color:#fff;border:none;border-radius:10px;cursor:pointer;font-weight:700;">⚠️ 전체 초기화</button>
               <button onclick="adminLogout()" style="padding:10px 16px;font-size:13px;font-family:'Jua',sans-serif;background:#e0f2fe;color:#0369a1;border:none;border-radius:10px;cursor:pointer;font-weight:700;">🚪 로그아웃</button>
             </div>
@@ -1833,7 +1687,6 @@
       </div>
 
       <div class="rc-btns">
-        <button class="rc-btn m" onclick="restartQuiz()">🔄 다시 시험 보기!</button>
         <button class="rc-btn s2" onclick="goHome()">🏠 처음으로</button>
       </div>
       <div class="rc-share-row" style="display:flex;gap:8px;margin-top:10px;">

@@ -761,7 +761,7 @@ function _doSwitchTab(name,btn){
   // 탭 이름 → 패널 ID 매핑
   const panelMap = {
     school:'panel-school', study:'panel-study',
-    exam:'panel-exam-quiz', game:'panel-game',
+    game:'panel-game',
     media:'panel-media', rankstats:'panel-rankstats', settings:'panel-settings'
   };
   const panelId = panelMap[name] || ('panel-'+name);
@@ -873,226 +873,12 @@ function goHome(){
   const bankSet=new Set([...BANK_TRUE,...BANK_FALSE].map(q=>q[0]));
   ALL_QS=ALL_QS.filter(q=>bankSet.has(q[0]));
   S.customQs=[];S.pickAnsVal=null;S.destVal='quiz';
-  _setSbarExam(false);
-  _setHeaderQuizUI(false);
   EL.app.style.display='none';EL.nameScreen.style.display='flex';
   EL.nameInput.value='';EL.nsStart.disabled=true;EL.nameInput.focus();
 }
 
-/* ══ 시험 설정 ══ */
-function renderQsCats(){
-  const cats=[...new Set(ALL_QS.map(q=>q[2]))].sort();
-  const wrap=$('qs-cats');if(!wrap)return;
-  wrap.innerHTML=
-    `<button class="qs-cat-btn all${!CFG.selectedCats?' on':''}" onclick="toggleQsCat(null,this)">전체</button>`+
-    cats.map(c=>{
-      const on=CFG.selectedCats&&CFG.selectedCats.includes(c);
-      return`<button class="qs-cat-btn${on?' on':''}" data-cat="${c}" onclick="toggleQsCat('${c.replace(/'/g,"\\'")}',this)">${c}</button>`;
-    }).join('');
-}
-function toggleQsCat(cat,btn){
-  if(cat===null){
-    CFG.selectedCats=null;
-    document.querySelectorAll('.qs-cat-btn').forEach(b=>b.classList.remove('on'));
-    btn.classList.add('on');
-  }else{
-    const allBtn=document.querySelector('.qs-cat-btn.all');
-    if(allBtn) allBtn.classList.remove('on');
-    if(!CFG.selectedCats) CFG.selectedCats=[];
-    const i=CFG.selectedCats.indexOf(cat);
-    if(i>=0){CFG.selectedCats.splice(i,1);btn.classList.remove('on');}
-    else{CFG.selectedCats.push(cat);btn.classList.add('on');}
-    if(CFG.selectedCats.length===0){CFG.selectedCats=null;if(allBtn)allBtn.classList.add('on');}
-  }
-  _updateQPreview();
-}
-function setQCount(n,btn){
-  CFG.qCount=n;
-  document.querySelectorAll('#qs-cnt-pills .qs-pill').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-  _updateQPreview();
-}
-function _updateQPreview(){
-  const base=CFG.selectedCats
-    ?ALL_QS.filter(q=>CFG.selectedCats.includes(q[2]))
-    :ALL_QS;
-  const actual=Math.min(CFG.qCount,base.length);
-  const el=document.getElementById('qs-preview');
-  if(el) el.textContent='📋 총 '+actual+'문제 출제 예정';
-}
-function setQTime(t,btn){
-  CFG.qTime=t;
-  document.querySelectorAll('#qs-time-pills .qs-pill').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-}
-function updateWrongBtn(){
-  const wrong=loadWrong();
-  const btn=$('qs-wrong-btn');if(btn) btn.disabled=wrong.length===0;
-  if(EL.wnRetryBtn) EL.wnRetryBtn.disabled=wrong.length===0;
-  // 탭 배지 업데이트
-  if(EL.tabBadgeWrong){
-    EL.tabBadgeWrong.style.display=wrong.length?'flex':'none';
-    if(wrong.length) EL.tabBadgeWrong.textContent=wrong.length>99?'99+':wrong.length;
-  }
-}
 
-/* ══ 시험(퀴즈) ══ */
-function _setSbarExam(on){
-  var r=document.querySelector('.sbar-right');
-  if(r){on?r.classList.add('show'):r.classList.remove('show');}
-}
-function startQuiz(customPool){
-  S.quizStarted=true; _setSbarExam(true);
-  // 시험 시작 시 헤더 퀴즈 UI 표시
-  _setHeaderQuizUI(true);
-  initQuizState(customPool);
-  EL.quizReady.style.display='none';
-  EL.quizPlaying.classList.add('on');
-  const _qlen=S.queue.length;
-  showToast('📝 총 '+_qlen+'문제 시작!', 1800);
-  showQ(false);
-}
-function startWrongQuiz(){
-  const wrong=loadWrong();
-  if(!wrong.length){alert('오답 노트가 비어있어요!');return;}
-  const pool=wrong.map(w=>([w.q,w.ans,w.cat]));
-  EL.ov.classList.remove('on');
-  switchTab('exam',null);
-  startQuiz(pool);
-}
-function restartQuiz(){
-  EL.ov.classList.remove('on');
-  switchTab('exam',null);
-  EL.quizReady.style.display='flex';
-  EL.quizPlaying.classList.remove('on');
-  stopTimer();S.quizStarted=false;S._todayQuizMode=false; _setSbarExam(false);
-  renderQsCats();updateWrongBtn();
-}
-function initQuizState(customPool){
-  stopTimer();
-  const TIME_NOW = CFG.qTime===0?99999:CFG.qTime;
-  const queue=customPool
-    ?[...customPool].sort(()=>Math.random()-.5)
-    :(()=>{
-        const base=CFG.selectedCats
-          ?ALL_QS.filter(q=>CFG.selectedCats.includes(q[2]))
-          :ALL_QS;
-        const truePool=base.filter(q=>q[1]===true);
-        const falsePool=base.filter(q=>q[1]===false);
-        const cnt=Math.min(CFG.qCount,base.length);
-        const half=Math.floor(cnt/2);
-        const ts=[...truePool].sort(()=>Math.random()-.5).slice(0,Math.min(half,truePool.length));
-        const fs=[...falsePool].sort(()=>Math.random()-.5).slice(0,Math.min(cnt-ts.length,falsePool.length));
-        return[...ts,...fs].sort(()=>Math.random()-.5);
-      })();
-  Object.assign(S,{queue,idx:0,score:0,combo:0,maxCombo:0,correct:0,wrong:0,lives:MAX_LIVES,locked:false,gameOver:false,timeLeft:TIME_NOW,catCorrect:{},catWrong:{},_paused:false,_todayQuizMode:false});
-  // 타이머 제한시간도 업데이트
-  S._TIME=TIME_NOW;
-  EL.gscore.textContent='0점';
-  EL.sc.textContent=EL.sw.textContent=EL.smx.textContent=EL.scur.textContent='0';
-  EL.pgf.style.width='0%';EL.ppct.textContent='0%';
-  EL.piv.textContent='1/'+queue.length;EL.qnum.textContent='1 / '+queue.length;
-  EL.combo.classList.remove('on');EL.combo.textContent='🔥 COMBO';
-  EL.ov.classList.remove('on');EL.gom.classList.remove('on');
-  EL.lvBadge.textContent='⭐ Lv.1 초보';
-  EL.hdCombo.textContent='0';EL.hdScore.textContent='0점';
-  // sbar 리셋
-  if(EL.sbarHearts) EL.sbarHearts.textContent='❤️'.repeat(MAX_LIVES);
-  // XP바 리셋은 updateLevel()에서 처리
-  updateLives();updateLevel();hideFb();
-}
 
-/* ══ 문제 표시 ══ */
-const QUIZ_CHEERS = [
-  '💪 할 수 있어요! 파이팅!',
-  '🌟 잘 하고 있어요!',
-  '🎯 집중! 한 문제씩 천천히!',
-  '🔥 분위기 좋은데요?!',
-  '✨ 이 정도면 천재예요!',
-  '🐰 토끼처럼 빠르게!',
-  '🦁 사자처럼 용감하게!',
-  '🎒 공부의 왕이 될 거예요!',
-  '⭐ 오늘도 멋진 학생이에요!',
-  '🍀 행운이 함께해요!',
-];
-function showQ(animate){
-  if(S.idx>=S.queue.length){showResult();return;}
-  const[q,,cat]=S.queue[S.idx];
-  EL.qtxt.textContent=q;
-  EL.blbl.textContent=cat||'📚 상식';
-  EL.qnum.textContent=(S.idx+1)+' / '+S.queue.length;
-  EL.piv.textContent=(S.idx+1)+'/'+S.queue.length;
-  const pct=Math.round(S.idx/S.queue.length*100);
-  EL.pgf.style.width=pct+'%';EL.ppct.textContent=pct+'%';
-  EL.bo.disabled=EL.bx.disabled=false;
-  S.locked=false;startTimer();
-  // 응원 메시지 (5문제마다)
-  if(EL.cheerBar && S.idx > 0 && S.idx % 5 === 0) {
-    EL.cheerBar.textContent = QUIZ_CHEERS[Math.floor(Math.random()*QUIZ_CHEERS.length)];
-    EL.cheerBar.classList.add('show');
-    setTimeout(()=>EL.cheerBar.classList.remove('show'), 2500);
-  }
-  if(animate){
-    EL.board.classList.remove('board-anim');
-    void EL.board.offsetWidth; // reflow trigger
-    EL.board.classList.add('board-anim');
-  }
-}
-
-/* ══ 답 처리 ══ */
-function ans(v){
-  if(S.locked||S.gameOver)return;
-  S.locked=true;stopTimer();
-  EL.bo.disabled=EL.bx.disabled=true;
-  const[q,correctAns,cat]=S.queue[S.idx];
-  const ok=(v!==null)&&(v===correctAns);
-  if(ok){
-    S.correct++;S.combo++;
-    if(S.combo>S.maxCombo){
-      S.maxCombo=S.combo;
-      // 역대 최고콤보 localStorage 저장
-      const prevBest=parseInt(lsGet(BEST_COMBO_KEY,'0'),10);
-      if(S.maxCombo>prevBest) lsSet(BEST_COMBO_KEY, String(S.maxCombo));
-    }
-    const pts=10+Math.min(S.combo-1,9)*5+((S._TIME>=9999)?5:S.timeLeft>=(S._TIME*.66)?5:S.timeLeft>=(S._TIME*.33)?3:1);
-    S.score+=pts;S.catCorrect[cat]=(S.catCorrect[cat]||0)+1;
-    showFb('✅ 정답! +'+pts+'점',true);playSound('ok');
-    // 콤보 칭찬
-    if(S.combo>=3) showComboPraise();
-    // FEVER 이펙트
-    if(S.combo===10) showFever('🔥 10 COMBO!');
-    else if(S.combo===20) showFever('⚡ 20 COMBO!!');
-    else if(S.combo===30) showFever('👑 30 COMBO!!!');
-    else if(S.combo>0&&S.combo%50===0) showFever('🏆 '+S.combo+' COMBO!!!');
-    // 미션 연동
-    completeMission('combo');
-  }else{
-    S.wrong++;S.combo=0;S.lives--;S.catWrong[cat]=(S.catWrong[cat]||0)+1;
-    const reason=v===null?'⏰ 시간초과! ':'❌ 오답! ';
-    showFb(reason+'정답은 '+(correctAns?'O':'X'),false);playSound('ng');
-    // 오답 저장
-    saveWrong(q,correctAns,cat);
-    if(S.lives<=0){S.gameOver=true;EL.gom.classList.add('on');}
-  }
-  EL.sc.textContent=S.correct;EL.sw.textContent=S.wrong;
-  EL.smx.textContent=S.maxCombo;EL.scur.textContent=S.combo;
-  EL.gscore.textContent=S.score+'점';
-  // 카테고리별 통계 localStorage 누적 저장
-  try{
-    const saved=lsGetJSON(CAT_STATS_KEY,{});
-    if(ok){saved[cat]=(saved[cat]||[0,0]);saved[cat][0]++;}
-    else{saved[cat]=(saved[cat]||[0,0]);saved[cat][1]++;}
-    lsSet(CAT_STATS_KEY, saved);
-  }catch(e){}
-  // 점수 팡 효과
-  EL.gscore.classList.remove('score-pop');
-  void EL.gscore.offsetWidth;
-  EL.gscore.classList.add('score-pop');
-  EL.hdCombo.textContent=S.combo;EL.hdScore.textContent=S.score+'점';
-  updateLives();updateCombo();updateLevel();S.idx++;
-  if(S.gameOver){setTimeout(showResult,1400);return;}
-  setTimeout(()=>{hideFb();showQ(true);},900);
-}
 
 /* ══ 오답 노트 ══ */
 function loadWrong(){return lsGetJSON(WRONG_KEY,[]);}
@@ -1136,14 +922,6 @@ function deleteWrong(q){
   const idx=list.findIndex(w=>w.q===q);
   if(idx>=0){list.splice(idx,1);lsSet(WRONG_KEY, list);}
   renderWrongNote();updateWrongBtn();renderStats && renderStats();
-}
-function clearWrongNote(){
-  if(loadWrong().length===0){showToast('오답 노트가 이미 비어있어요 🎉');return;}
-  cgConfirm('오답 노트를 전부 삭제할까요?', ()=>{
-    localStorage.removeItem(WRONG_KEY);
-    renderWrongNote();updateWrongBtn();renderStats && renderStats();
-    showToast('오답 노트를 지웠어요 🗑');
-  });
 }
 
 /* ══ FEVER 이펙트 ══ */
@@ -1195,21 +973,7 @@ function launchConfetti(){
   draw();
 }
 
-/* ══ 헤더 퀴즈 UI 표시/숨김 헬퍼 ══ */
-function _setHeaderQuizUI(on){
-  const _hdc=$('hd-center'),_tr=$('timer-ring'),_rb=$('hd-restart-btn');
-  if(_hdc)_hdc.style.display=on?'flex':'';
-  if(_tr) _tr.style.display=on?'flex':'';
-  if(_rb) _rb.style.display=on?'':'none';
-}
-/* ══ 타이머 ══ */
-function startTimer(){
-  stopTimer(); // 기존 타이머 반드시 정리 후 새로 시작 (중복 실행 방지)
-  const T=S._TIME||TIME;
-  S.timeLeft=T;updateTimerUI();
-  if(T>=9999){EL.tval.textContent='∞';EL.timerFg.style.strokeDashoffset=0;return;}
-  S.timerID=setInterval(()=>{S.timeLeft--;updateTimerUI();if(S.timeLeft<=0){stopTimer();ans(null);}},1000);
-}
+/* ══ 타이머 정리 ══ */
 function stopTimer(){clearInterval(S.timerID);S.timerID=null;}
 function updateTimerUI(){
   const T=S._TIME||TIME;
@@ -1245,64 +1009,6 @@ function updateLevel(){
   }
 }
 
-/* ══ 성적표 (결과) ══ */
-function showResult(){_setSbarExam(false);
-  const tot=S.correct+S.wrong,rat=tot?Math.round(S.correct/tot*100):0;
-  const GRADES=[
-    [95,'S','🏆','환상적이에요! 최고예요! 👑','gs-s'],
-    [80,'A','🎉','정말 잘했어요! 대단해요! 🌟','gs-a'],
-    [65,'B','😊','잘했어요! 조금만 더 노력해봐요!','gs-b'],
-    [50,'C','😅','괜찮아요! 다음엔 더 잘할 수 있어요!','gs-c'],
-    [0, 'D','💪','공부하고 다시 도전해봐요! 화이팅!','gs-d']
-  ];
-  const COMMENTS=[
-    [95,'🏆','와! 거의 완벽해요! 진짜 대단한 실력이에요! 👑'],
-    [80,'🎉','훌륭해요! 열심히 공부한 게 느껴져요!'],
-    [65,'😊','잘했어요! 틀린 문제를 복습하면 더 좋아질 거예요!'],
-    [50,'😅','조금 더 공부해봐요! 공부하기 탭을 활용해보세요!'],
-    [0, '💪','포기하지 말고 공부하기부터 시작해봐요! 할 수 있어!']
-  ];
-  const g=GRADES.find(([min])=>rat>=min);
-  const c=COMMENTS.find(([min])=>rat>=min);
-  // 성적표 채우기
-  EL.rcSubtitle.textContent=S.gameOver?'아쉽지만 다음엔 더 잘할 거예요!':'수고했어요! 시험 완료!';
-  EL.rcStampGrade.textContent=g[1];
-  EL.rcName.textContent=S.playerName;
-  EL.rcDate.textContent=new Date().toLocaleDateString('ko-KR');
-  EL.rcScore.textContent=S.score+'점';
-  EL.rcScoreSub.textContent='정답률 '+rat+'% · '+S.correct+'/'+tot+'문제 정답';
-  EL.rcCorrect.textContent=S.correct;
-  EL.rcWrong.textContent=S.wrong;
-  EL.rcCombo.textContent=S.maxCombo;
-  EL.rcTotal.textContent=tot;
-  EL.rcCommentIcon.textContent=c[1];
-  EL.rcCommentText.textContent=c[2];
-  // 등급 바 활성화
-  ['d','c','b','a','s'].forEach(l=>{
-    const el=$('gs-'+l);if(el){el.classList.remove('active');if(l===g[1].toLowerCase())el.classList.add('active');}
-  });
-  // 성적표 이력 저장
-  const tot2=S.correct+S.wrong,rat2=tot2?Math.round(S.correct/tot2*100):0;
-  const grd=rat2>=95?'S':rat2>=80?'A':rat2>=65?'B':rat2>=50?'C':'D';
-  reportSave({
-    name: S.playerName,
-    score: S.score,
-    correct: S.correct,
-    wrong: S.wrong,
-    total: tot2,
-    grade: grd,
-    maxCombo: S.maxCombo,
-    subtitle: S.gameOver?'아쉽지만 다음엔 더 잘할 거예요!':'수고했어요! 시험 완료!',
-    date: new Date().toLocaleDateString('ko-KR')
-  });
-  EL.ov.classList.add('on');
-  saveRank();renderStats();
-  // 미션 연동
-  completeMission('quiz');
-  finishTodayQuiz();
-  initTodayQuiz();
-  renderDailyMissions();
-}
 
 /* ════════════════════════════════════════════════
    📤 성적표 공유
@@ -1571,15 +1277,6 @@ function clearCustomQ(){
     renderCustomList();
     showToast('전체 삭제 완료 🗑');
   });
-}
-function useCustomQ(){
-  if(!adminIsLogged()){showToast('🔒 관리자만 사용할 수 있어요!');adminLogin();return;}
-  // 시험용 문제만 (quiz or both)
-  const pool=S.customQs.filter(q=>!q[3]||q[3]==='quiz'||q[3]==='both');
-  if(!pool.length){alert('시험용 문제가 없어요!\n목적지를 "시험 문제" 또는 "둘 다"로 설정한 문제가 필요해요.');return;}
-  EL.ov.classList.remove('on');
-  switchTab('exam',null);
-  startQuiz(pool);
 }
 
 /* ══ 사운드 ══ */
@@ -3835,14 +3532,6 @@ function adminResetStats() {
     showToast('📊 통계 초기화 완료!');
   }, '📊', '초기화', 'linear-gradient(135deg,#f08030,#ea580c)');
 }
-function adminResetWrong() {
-  if(!adminIsLogged()){showToast("⚠️ 관리자 로그인 후 사용 가능!");adminLogin();return;}
-  cgConfirm('오답 노트를 초기화할까요?', ()=>{
-    localStorage.removeItem(WRONG_KEY);
-    renderWrongNote && renderWrongNote();
-    showToast('📕 오답 초기화 완료!');
-  }, '📕', '초기화', 'linear-gradient(135deg,#f08030,#ea580c)');
-}
 function adminResetAll() {
   cgConfirm('모든 데이터를 초기화할까요? 되돌릴 수 없어요!', ()=>{
     [RANK_KEY, WRONG_KEY, CAT_STATS_KEY, BEST_COMBO_KEY, CUSTOM_QS_KEY, 'cgSchoolYTLinks'].forEach(k => localStorage.removeItem(k));
@@ -4889,23 +4578,6 @@ function schoolSubTab(name, btn) {
   }
 }
 
-/* ════ 시험·오답 서브탭 ════ */
-function examSubTab(name, btn) {
-  document.querySelectorAll('.exam-stab').forEach(b => b.classList.remove('on'));
-  if (btn) btn.classList.add('on');
-  const quiz = document.getElementById('exam-sub-quiz');
-  const wrong = document.getElementById('exam-sub-wrong');
-  if (name === 'quiz') {
-    if (quiz) quiz.style.display = '';
-    if (wrong) wrong.style.display = 'none';
-    renderQsCats && renderQsCats();
-    updateWrongBtn && updateWrongBtn();
-  } else {
-    if (quiz) quiz.style.display = 'none';
-    if (wrong) wrong.style.display = '';
-    renderWrongNote && renderWrongNote();
-  }
-}
 
 /* ════ 설정 탭 문제 만들기 래퍼 ════ */
 let _makeAns2 = null;
@@ -5182,43 +4854,6 @@ function showMascotCheer(msg) {
   _cheerTO = setTimeout(()=>cheer.classList.remove('on'), 3500);
 }
 
-/* ─── 오늘의 퀴즈 ─── */
-const TODAY_QUIZ_KEY = 'cgTodayQuiz';
-function initTodayQuiz() {
-  const todayStr = new Date().toDateString();
-  const btn = document.getElementById('tqb-btn');
-  const desc = document.getElementById('tqb-desc');
-  const saved = lsGetJSON(TODAY_QUIZ_KEY, {});
-  if(saved.date === todayStr && saved.done) {
-    if(btn) {btn.textContent='✅ 완료!'; btn.className='tqb-btn done'; btn.onclick=null;}
-    if(desc) desc.textContent = '오늘의 퀴즈 완료! 내일 또 도전해봐요 🌟';
-  } else {
-    if(btn) btn.textContent='도전하기 →';
-    if(desc) desc.textContent = '매일 새로운 5문제에 도전해봐요';
-  }
-}
-function startTodayQuiz() {
-  const btn = document.getElementById('tqb-btn');
-  if(btn && btn.classList.contains('done')) return;
-  // 오늘 날짜 기반 5문제 랜덤 선택
-  const today = new Date();
-  const seed = today.getFullYear()*10000 + (today.getMonth()+1)*100 + today.getDate();
-  const pool = [...ALL_QS].sort((a,b)=>{
-    const ha = (a[0].slice(0,5)+seed).split('').reduce((s,c)=>s+c.charCodeAt(0),0);
-    const hb = (b[0].slice(0,5)+seed).split('').reduce((s,c)=>s+c.charCodeAt(0),0);
-    return ha - hb;
-  }).slice(0,5);
-  S._todayQuizMode = true;
-  switchTab('exam', null);
-  startQuiz(pool);
-}
-function finishTodayQuiz() {
-  if(!S._todayQuizMode) return;
-  S._todayQuizMode = false;
-  const todayStr = new Date().toDateString();
-  lsSet(TODAY_QUIZ_KEY, {date:todayStr, done:true});
-  completeMission('quiz');
-}
 
 /* 콤보 칭찬 텍스트 */
 const COMBO_PRAISES = ['대박!','굉장해!','천재!','완벽!','최고!','엄청나!','와우!','짝짝짝!'];
