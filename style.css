@@ -2212,6 +2212,14 @@ body.dark-mode .board{background:#1e1b2e;border:1px solid #4a2040;}
 body.dark-mode .ans-btn{background:#2a1830;border-color:#4a2040;color:#c090a0;}
 body.dark-mode .ans-btn:hover:not(:disabled){background:#3a2840;border-color:#48cae4;}
 
+/* 텐텐 게임 카드 */
+.game-card.tententen{background:linear-gradient(135deg,#ffd6e8,#ffe8f0);border-color:#f06878;}
+.game-card.tententen .gc-icon{color:#f06878;}
+.game-card.tententen .gc-title{color:#f06878;}
+
+.tt-hint-btn:hover{background:#ffda5c;transform:translateY(-2px);box-shadow:0 3px 0 #d4a017;}
+.tt-hint-btn:active{transform:translateY(0px);box-shadow:0 1px 0 #d4a017;}
+
 /* 모달 스타일 */
 .modal-bg{position:fixed;inset:0;z-index:1500;background:rgba(0,0,0,.6);
   backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;padding:20px;}

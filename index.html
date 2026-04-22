@@ -1031,9 +1031,15 @@
             <div class="gc-desc">색깔 순서를 기억해서<br>따라 누르세요!</div>
             <button class="gc-btn">🎨 시작하기</button>
           </div>
-          
-          
-          
+          <div class="game-card tententen" onclick="openTenTen()">
+            <div class="gc-tip">🖱 드래그로 10 만들기<br>정확한 선택이 수익! 💰</div>
+            <div class="gc-icon">🧮</div>
+            <div class="gc-title">텐텐</div>
+            <div class="gc-meta"><span class="gc-diff">⭐⭐☆</span><span class="gc-time">⏱ ~3분</span></div>
+            <div class="gc-best" id="gbest-tententen">최고 -</div>
+            <div class="gc-desc">수익을 올려보세요!<br>정확히 10을 만들면 돈!</div>
+            <button class="gc-btn">🧮 시작하기</button>
+          </div>
         </div>
       </div>
     </div>
@@ -1758,6 +1764,35 @@
     <div class="gr-btns">
       <button class="gr-btn retry" onclick="retryMole()">🔄 다시 하기</button>
       <button class="gr-btn home" onclick="closeGame('mole')">🏠 허브로</button>
+    </div>
+  </div>
+</div>
+
+<!-- 🧮 텐텐 게임 화면 -->
+<div class="game-screen" id="game-tententen">
+  <div class="gs-header" style="background:rgba(240,104,120,.1);backdrop-filter:blur(10px);border-bottom:2px solid #f06878;color:var(--navy);">
+    <button class="gs-back" onclick="closeTenTen()">← 나가기</button>
+    <div class="gs-title">🧮 텐텐</div>
+    <div style="display:flex;gap:20px;font-weight:700;font-size:15px;">
+      <div>⏱ <span id="tt-timer">03:00</span></div>
+      <div>💰 <span id="tt-score">0</span>원</div>
+    </div>
+  </div>
+  <div class="gs-body" style="display:flex;flex-direction:column;gap:10px;align-items:center;padding:20px;background:#fff;position:relative;">
+    <div id="tt-mission" style="font-size:18px;font-weight:700;color:#f06878;margin:10px 0;">미션 대기 중...</div>
+    <canvas id="tt-canvas" width="600" height="600" style="border:4px solid #ffc8d0;border-radius:15px;cursor:crosshair;background:#fff;"></canvas>
+    <button class="tt-hint-btn" onclick="ttUseHint()" style="padding:10px 30px;background:#fff3cd;border:none;border-radius:10px;cursor:pointer;font-family:'Jua';font-weight:700;font-size:14px;margin-top:10px;">💡 힌트 사용 (-200원)</button>
+  </div>
+</div>
+<div class="game-result" id="tententen-result">
+  <div class="gr-card">
+    <div class="gr-icon">🎉</div>
+    <div class="gr-title">방송 종료!</div>
+    <div class="gr-score" id="tt-result-score">0원</div>
+    <div class="gr-sub" id="tt-result-sub">오늘도 수고했어요!</div>
+    <div class="gr-btns">
+      <button class="gr-btn retry" onclick="retryTenTen()">🔄 다시 하기</button>
+      <button class="gr-btn home" onclick="closeGame('tententen')">🏠 허브로</button>
     </div>
   </div>
 </div>
