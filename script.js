@@ -6916,44 +6916,69 @@ function updateTABar() {
 function showWin() {
   const modal = document.getElementById('win-bg');
   if (!modal) return;
-  modal.innerHTML = `
-    <div class="modal-box" style="text-align:center;">
-      <div style="font-size:48px;margin-bottom:16px;">🎉</div>
-      <div style="font-size:20px;font-family:'Jua';font-weight:700;margin-bottom:12px;">게임 완료!</div>
-      <div style="font-size:14px;color:#666;margin-bottom:24px;">
-        <div style="margin:4px 0;">점수: <b>${QZ.score}점</b></div>
-        <div style="margin:4px 0;">정답: <b>${QZ.correct}/${QZ.total}</b></div>
-        <div style="margin:4px 0;">성공률: <b>${QZ.total > 0 ? Math.round(QZ.correct / QZ.total * 100) : 0}%</b></div>
+
+  const score = document.getElementById('w-score');
+  const stats = document.getElementById('w-stats');
+  const items = document.getElementById('w-items');
+
+  if (score) score.textContent = QZ.score + '점';
+  if (stats) {
+    stats.innerHTML = `
+      <span id="w-time">⏱ --</span>
+      <span>💡 힌트 <span id="w-hc">${QZ.hints}</span>회</span>
+      <span>🔥 최대콤보 <span id="w-mc">${QZ.combo}</span></span>
+      <span>⏭ 넘김 <span id="w-skip">${QZ.skips}문제</span></span>
+    `;
+  }
+
+  if (items) {
+    items.innerHTML = QZ.answers.map(ans => `
+      <div class="w-item ${ans.isCorrect ? 'correct' : 'wrong'}">
+        <div class="w-item-q">${esc(ans.q)}</div>
+        <div class="w-item-ans">정답: ${ans.correct} / 선택: ${ans.selected}</div>
       </div>
-      <div style="display:flex;gap:8px;">
-        <button onclick="document.getElementById('win-bg').style.display='none';loadQuiz();" style="flex:1;padding:12px;background:#f06878;color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:'Jua';font-weight:700;">🔄 새 게임</button>
-        <button onclick="showReport();" style="flex:1;padding:12px;background:#48cae4;color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:'Jua';font-weight:700;">📊 성적표</button>
-      </div>
-    </div>
-  `;
-  modal.style.display = 'flex';
+    `).join('');
+  }
+
+  modal.classList.add('on');
 }
 
 function showTAResult() {
   const modal = document.getElementById('ta-bg');
   if (!modal) return;
-  modal.innerHTML = `
-    <div class="modal-box" style="text-align:center;">
-      <div style="font-size:48px;margin-bottom:16px;">⏰</div>
-      <div style="font-size:20px;font-family:'Jua';font-weight:700;margin-bottom:12px;">타임어택 완료!</div>
-      <div style="font-size:14px;color:#666;margin-bottom:24px;">
-        <div style="margin:4px 0;">풀이: <b>${QZ.solved}문제</b></div>
-        <div style="margin:4px 0;">점수: <b>${QZ.taScore}점</b></div>
-      </div>
-      <button onclick="document.getElementById('ta-bg').style.display='none';" style="width:100%;padding:12px;background:#f06878;color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:'Jua';font-weight:700;">닫기</button>
-    </div>
-  `;
-  modal.style.display = 'flex';
+
+  const solved = document.getElementById('ta-result-solved');
+  const score = document.getElementById('ta-result-score');
+
+  if (solved) solved.textContent = QZ.solved;
+  if (score) score.textContent = QZ.taScore;
+
+  modal.classList.add('on');
+}
+
+function closeTAResult(reset) {
+  const modal = document.getElementById('ta-bg');
+  if (modal) modal.classList.remove('on');
+  if (reset) {
+    stopTA();
+    QZ.taActive = false;
+  }
+}
+
+function closeModal() {
+  const modal = document.getElementById('win-bg');
+  if (modal) modal.classList.remove('on');
+}
+
+function closeReport() {
+  const modal = document.getElementById('rpt-bg');
+  if (modal) modal.classList.remove('on');
 }
 
 function showReport() {
   const modal = document.getElementById('rpt-bg');
   if (!modal) return;
+
   const cats = [...new Set(QZ.history.map(h => h.cat))];
   const catStats = cats.map(c => {
     const h = QZ.history.filter(x => x.cat === c);
@@ -6965,37 +6990,28 @@ function showReport() {
       rate: h.length > 0 ? Math.round(correct / h.length * 100) : 0
     };
   });
+
   const catEmoji = { 'korean': '📖', 'math': '🔢', 'history': '🏛', 'science': '🔬' };
-  modal.innerHTML = `
-    <div class="modal-box" style="overflow-y:auto;max-height:80vh;">
-      <div style="text-align:center;margin-bottom:24px;">
-        <div style="font-size:32px;font-family:'Jua';font-weight:700;margin-bottom:16px;">📊 성적표</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
-          <div style="background:#f0f0f0;padding:12px;border-radius:8px;">
-            <div style="font-size:12px;color:#999;">총점</div>
-            <div style="font-size:24px;font-family:'Jua';font-weight:700;">${QZ.score}점</div>
-          </div>
-          <div style="background:#f0f0f0;padding:12px;border-radius:8px;">
-            <div style="font-size:12px;color:#999;">정답률</div>
-            <div style="font-size:24px;font-family:'Jua';font-weight:700;">${QZ.total > 0 ? Math.round(QZ.correct / QZ.total * 100) : 0}%</div>
-          </div>
+  const rptBody = document.getElementById('rpt-body');
+
+  if (rptBody) {
+    rptBody.innerHTML = catStats.map(s => `
+      <div class="rpt-cat">
+        <div class="rpt-cat-name">${catEmoji[s.cat] || '📚'} ${s.cat}</div>
+        <div class="rpt-cat-stat">
+          <span>정답: ${s.correct}/${s.total}</span>
+          <span>성공률: ${s.rate}%</span>
         </div>
       </div>
-      <div style="margin-bottom:20px;">
-        <div style="font-size:14px;font-family:'Jua';font-weight:700;margin-bottom:12px;">카테고리별 성적</div>
-        <div style="display:flex;flex-direction:column;gap:8px;">
-          ${catStats.map(s => `
-            <div style="background:#f5f5f5;padding:12px;border-radius:8px;display:flex;align-items:center;justify-content:space-between;">
-              <span>${catEmoji[s.cat] || '📚'} ${s.cat}</span>
-              <span style="font-family:'Jua';font-weight:700;">${s.correct}/${s.total} (${s.rate}%)</span>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-      <button onclick="document.getElementById('rpt-bg').style.display='none';" style="width:100%;padding:12px;background:#f06878;color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:'Jua';font-weight:700;">닫기</button>
-    </div>
-  `;
-  modal.style.display = 'flex';
+    `).join('');
+  }
+
+  modal.classList.add('on');
+}
+
+function newGame() {
+  closeModal();
+  loadQuiz();
 }
 
 // 초기화 (DOM 준비 시)

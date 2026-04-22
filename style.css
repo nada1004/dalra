@@ -2211,3 +2211,68 @@ body.dark-mode .ta-panel{background:#2a1830;border:1px solid #4a2040;}
 body.dark-mode .board{background:#1e1b2e;border:1px solid #4a2040;}
 body.dark-mode .ans-btn{background:#2a1830;border-color:#4a2040;color:#c090a0;}
 body.dark-mode .ans-btn:hover:not(:disabled){background:#3a2840;border-color:#48cae4;}
+
+/* 모달 스타일 */
+.modal-bg{position:fixed;inset:0;z-index:1500;background:rgba(0,0,0,.6);
+  backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-bg.on{display:flex;}
+.modal{background:#fff;border-radius:18px;padding:24px;max-width:420px;
+  max-height:85vh;overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,.2);
+  animation:modalIn .3s cubic-bezier(.34,1.56,.64,1);}
+@keyframes modalIn{from{opacity:0;transform:scale(.95);}to{opacity:1;transform:scale(1);}}
+.m-emo{font-size:48px;text-align:center;margin-bottom:16px;}
+.m-title{font-size:20px;font-family:'Jua',sans-serif;font-weight:700;
+  color:var(--navy);text-align:center;margin-bottom:16px;}
+.m-score{font-size:32px;font-family:'Jua',sans-serif;font-weight:900;
+  color:var(--blue);text-align:center;margin-bottom:12px;}
+.m-rank{font-size:14px;color:#666;text-align:center;margin-bottom:16px;}
+.m-stats{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:#666;
+  margin-bottom:16px;justify-content:center;}
+.m-stats span{background:#f5f5f5;padding:6px 12px;border-radius:20px;flex-shrink:0;}
+.m-note{font-size:12px;color:#999;text-align:center;margin:16px 0;}
+.m-btns{display:flex;gap:8px;margin-top:16px;}
+.cbtn{flex:1;padding:12px;border:none;border-radius:10px;cursor:pointer;
+  font-family:'Jua',sans-serif;font-weight:700;font-size:14px;
+  background:#f5f5f5;color:var(--navy);transition:.2s;}
+.cbtn:hover{background:#e8e8e8;transform:translateY(-1px);}
+.cbtn.pri{background:linear-gradient(135deg,#f06878,#e04858);color:#fff;
+  box-shadow:0 3px 0 #3a1820;}
+.cbtn.pri:hover{background:linear-gradient(135deg,#f08898,#e26878);}
+
+/* 라운드 완료 모달 */
+.modal-wide{max-width:480px;}
+.w-items{display:flex;flex-direction:column;gap:12px;margin-bottom:16px;
+  max-height:300px;overflow-y:auto;}
+.w-item{background:#f5f5f5;padding:12px;border-radius:10px;font-size:13px;}
+.w-item.correct{border-left:4px solid #28a745;background:#e8f5e9;}
+.w-item.wrong{border-left:4px solid #e74c3c;background:#fadbd8;}
+.w-item.skip{border-left:4px solid #f39c12;background:#fef5e7;}
+.w-item-q{font-weight:700;color:var(--navy);margin-bottom:4px;}
+.w-item-ans{font-size:12px;color:#666;}
+
+/* 타임어택 모달 */
+.ta-modal{max-width:360px;}
+.ta-result-emo{font-size:48px;text-align:center;margin-bottom:16px;}
+.ta-result-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+.ta-result-item{background:#f5f5f5;padding:16px;border-radius:12px;text-align:center;}
+.ta-result-label{font-size:12px;color:#999;margin-bottom:8px;}
+.ta-result-val{font-size:28px;font-family:'Jua',sans-serif;font-weight:900;color:#f06878;}
+.ta-result-rank{font-size:13px;color:#666;text-align:center;margin-bottom:16px;
+  background:#fff3cd;padding:10px;border-radius:8px;}
+
+/* 성적표 모달 */
+.modal-report{max-width:420px;}
+#rpt-body{display:flex;flex-direction:column;gap:12px;margin-bottom:16px;}
+.rpt-cat{background:#f5f5f5;padding:12px;border-radius:10px;}
+.rpt-cat-name{font-weight:700;color:var(--navy);margin-bottom:8px;font-size:14px;}
+.rpt-cat-stat{display:flex;justify-content:space-between;font-size:13px;color:#666;}
+
+body.dark-mode .modal{background:#1e1b2e;box-shadow:0 10px 40px rgba(0,0,0,.5);}
+body.dark-mode .m-title,body.dark-mode .w-item-q{color:#ffeef0;}
+body.dark-mode .m-stats span,body.dark-mode .ta-result-item,
+body.dark-mode .w-item,body.dark-mode .rpt-cat{background:#2a1830;color:#c090a0;}
+body.dark-mode .cbtn{background:#2a1830;color:#c090a0;}
+body.dark-mode .cbtn:hover{background:#3a2840;}
+body.dark-mode .w-item.correct{background:#1a3a2a;border-left-color:#48cae4;}
+body.dark-mode .w-item.wrong{background:#3a1a1a;border-left-color:#e74c3c;}
+body.dark-mode .ta-result-rank{background:rgba(72,202,228,.1);border:1px solid #48cae4;}
