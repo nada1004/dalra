@@ -9,7 +9,8 @@
       "Bash(git commit -m '게임별 최고기록 localStorage 저장 및 신기록 배너 구현 완료 *)",
       "Bash(git commit -m '미디어탭 + 상단 탭버튼 전체 개선 *)",
       "Bash(git commit *)",
-      "Bash(gh api *)"
+      "Bash(gh api *)",
+      "Bash(grep -n \"^const \\\\$\\\\|^function \\\\$\\\\|^window\\\\.\\\\$\" d:/projects/달라/script.js)"
     ]
   }
 }

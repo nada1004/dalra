@@ -2640,7 +2640,7 @@ function renderPlaylists(){
       <div class="pl-card-icon">${p.icon}</div>
       <div class="pl-card-title">${p.title}</div>
       <div class="pl-card-desc">${p.desc}</div>
-      <button class="pl-card-btn" onclick="ytSearch('${p.q.replace(/'/g,"\\'")}')">📺 보기</button>
+      <button class="pl-card-btn" onclick="ytSetSearch('${p.q.replace(/'/g,"\\'")}')">📺 보기</button>
     </div>`).join('');
 }
 
@@ -3158,7 +3158,8 @@ function ytRenderSaved(){
 }
 
 function ytPlaySaved(vid){
-  document.getElementById('yt-url-inp').value='https://youtu.be/'+vid;
+  const inp=document.getElementById('yt-url-inp');
+  if(inp) inp.value='https://youtu.be/'+vid;
   ytShowPlayer(vid);
   const cb=document.getElementById('yt-clear-btn');
   if(cb) cb.style.display='inline-flex';
