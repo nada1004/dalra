@@ -3981,12 +3981,17 @@ function noticeDelete() {
 }
 function noticeFormOpen() {
   if(!adminIsLogged()){showToast("⚠️ 관리자만 가정통신문을 작성할 수 있어요!");adminLogin();return;}
-  document.getElementById('nf-title').value = '';
-  document.getElementById('nf-from').value = '';
-  document.getElementById('nf-content').value = '';
+  const title = document.getElementById('nf-title');
+  const from = document.getElementById('nf-from');
+  const content = document.getElementById('nf-content');
+  const videoUrl = document.getElementById('nf-video-url');
+  if(title) title.value = '';
+  if(from) from.value = '';
+  if(content) content.value = '';
   nfClearImg();
-  document.getElementById('nf-video-url').value = '';
-  document.getElementById('notice-form-bg').classList.add('on');
+  if(videoUrl) videoUrl.value = '';
+  const bg = document.getElementById('notice-form-bg');
+  if(bg) bg.classList.add('on');
 }
 /* ════════════════════════════════════════════════
    🎬 로컬 영상 재생
@@ -4150,14 +4155,16 @@ function soopLoadPresets() {
 }
 function soopSavePresets(list) { lsSet(SOOP_KEY, list); }
 function soopAdd() {
-  const val = document.getElementById('soop-inp').value.trim();
+  const inp = document.getElementById('soop-inp');
+  if (!inp) return;
+  const val = inp.value.trim();
   if (!val) { showToast('스트리머 ID를 입력하세요!'); return; }
   val.split(',').map(x=>x.trim()).filter(Boolean).forEach(raw => {
     const id = soopNormalizeId(raw);
     if (!id) return;
     if (!_soopIds.includes(id)) _soopIds.push(id);
   });
-  document.getElementById('soop-inp').value = '';
+  inp.value = '';
   soopRender();
 }
 
@@ -4362,11 +4369,12 @@ function soopSetLayout(n) {
 }
 function soopSavePreset() {
   if (!_soopIds.length) { showToast('방송을 먼저 추가하세요!'); return; }
-  const name = document.getElementById('soop-preset-name').value.trim() || ('즐겨찾기 '+new Date().toLocaleDateString('ko-KR'));
+  const nameInp = document.getElementById('soop-preset-name');
+  const name = (nameInp?.value?.trim()) || ('즐겨찾기 '+new Date().toLocaleDateString('ko-KR'));
   const list = soopLoadPresets();
   list.push({ name, ids:[..._soopIds], savedAt:Date.now() });
   soopSavePresets(list);
-  document.getElementById('soop-preset-name').value = '';
+  if(nameInp) nameInp.value = '';
   soopRenderPresets();
   alert(name+' 저장됐어요!');
 }
@@ -6443,8 +6451,10 @@ function soopFavAdd() {
   if (list.find(f => f.id === id)) { showToast('이미 등록된 스트리머예요!'); return; }
   list.push({ id, nick: nick || id });
   soopFavSave(list);
-  document.getElementById('soop-fav-new-id').value = '';
-  document.getElementById('soop-fav-new-nick').value = '';
+  const idInp = document.getElementById('soop-fav-new-id');
+  const nickInp = document.getElementById('soop-fav-new-nick');
+  if(idInp) idInp.value = '';
+  if(nickInp) nickInp.value = '';
   soopFavRender();
   soopVoteRender();
   showToast('🎙 ' + (nick || id) + ' 등록됨!');
