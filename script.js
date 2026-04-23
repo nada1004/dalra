@@ -7020,6 +7020,215 @@ function ttShowResult() {
   S.points = (S.points || 0) + Math.floor(TT.score / 100);
 }
 
+// ═══ 보글보글 게임 ═══
+const BOGGLE_WORDS = new Set([
+  'the','and','for','are','but','not','you','all','can','her','was','one','our','out','day','get','has','him','his','how','its','may','new','now','old','see','two','way','who','boy','did','its','let','put','say','she','too','use','cat','cut','big','dog','hot','run','sun','top','red','sit','god','yes','car','fun','end','bad','yes','mom','dad','law','win','tea','pig','art','bus','doll','fish','bird','chin','fish','game','hand','jump','kind','like','make','name','play','read','said','same','show','some','them','they','very','want','what','will','with','word','work','home','just','keep','last','left','more','much','must','such','than','that','them','then','this','time','when','year','come','good','made','many','most','only','open','over','such','take','tell','turn','well','your','also','back','both','call','came','each','even','ever','find','give','give','goes','good','hand','here','high','into','just','kind','know','life','like','live','long','made','make','many','most','next','once','only','over','same','seem','seen','show','took','turn','well','what','when','will','with','work','world','year','young']);
+
+const BOGGLE = {
+  grid: [],
+  selected: [],
+  foundWords: new Set(),
+  score: 0,
+  timeLeft: 180,
+  timerID: null,
+  isDragging: false,
+  running: false
+};
+
+function openBoggle() {
+  openGame('boggle');
+  boggleInit();
+}
+
+function retryBoggle() {
+  closeGame('boggle');
+  setTimeout(() => openBoggle(), 150);
+}
+
+function boggleInit() {
+  BOGGLE.grid = generateBoggleGrid();
+  BOGGLE.selected = [];
+  BOGGLE.foundWords = new Set();
+  BOGGLE.score = 0;
+  BOGGLE.timeLeft = 180;
+  BOGGLE.isDragging = false;
+  BOGGLE.running = true;
+
+  renderBoggleBoard();
+  startBoggleTimer();
+}
+
+function generateBoggleGrid() {
+  const VOWELS = 'AEIOU';
+  const CONSONANTS = 'BCDFGHJKLMNPQRSTVWXYZ';
+  const letters = [];
+
+  for (let i = 0; i < 5; i++) {
+    letters.push(VOWELS[Math.floor(Math.random() * 5)]);
+  }
+  for (let i = 0; i < 11; i++) {
+    letters.push(CONSONANTS[Math.floor(Math.random() * 21)]);
+  }
+  return letters.sort(() => Math.random() - 0.5);
+}
+
+function renderBoggleBoard() {
+  const body = document.getElementById('boggle-body');
+  let html = `
+    <div class="boggle-wrap">
+      <div class="boggle-top">
+        <div class="boggle-score-chip">🏅 <span id="boggle-score">0</span>점</div>
+        <div class="boggle-current-word" id="boggle-current">단어를 드래그하세요</div>
+        <div class="boggle-word-count-chip">📝 <span id="boggle-word-count">0</span>개</div>
+      </div>
+      <div class="boggle-grid" id="boggle-grid">
+  `;
+
+  BOGGLE.grid.forEach((letter, idx) => {
+    html += `<div class="boggle-cell" data-idx="${idx}">${letter}</div>`;
+  });
+
+  html += `
+      </div>
+      <div class="boggle-found-words" id="boggle-found-words"></div>
+    </div>
+  `;
+
+  body.innerHTML = html;
+
+  document.querySelectorAll('.boggle-cell').forEach(cell => {
+    cell.addEventListener('pointerdown', (e) => bogglePointerDown(parseInt(e.target.dataset.idx)));
+    cell.addEventListener('pointermove', (e) => bogglePointerMove(parseInt(e.target.dataset.idx)));
+  });
+
+  document.addEventListener('pointerup', bogglePointerUp);
+}
+
+function bogglePointerDown(idx) {
+  if (!BOGGLE.running) return;
+  BOGGLE.isDragging = true;
+  BOGGLE.selected = [idx];
+  updateBoggleUI();
+}
+
+function bogglePointerMove(idx) {
+  if (!BOGGLE.isDragging || !BOGGLE.running) return;
+
+  const lastIdx = BOGGLE.selected[BOGGLE.selected.length - 1];
+  if (isAdjacent(lastIdx, idx) && !BOGGLE.selected.includes(idx)) {
+    BOGGLE.selected.push(idx);
+    updateBoggleUI();
+  }
+}
+
+function bogglePointerUp() {
+  if (!BOGGLE.isDragging) return;
+  BOGGLE.isDragging = false;
+
+  if (BOGGLE.selected.length >= 3) {
+    boggleCheckWord();
+  }
+  BOGGLE.selected = [];
+  updateBoggleUI();
+}
+
+function isAdjacent(a, b) {
+  const ar = Math.floor(a / 4), ac = a % 4;
+  const br = Math.floor(b / 4), bc = b % 4;
+  return Math.abs(ar - br) <= 1 && Math.abs(ac - bc) <= 1 && a !== b;
+}
+
+function boggleCheckWord() {
+  const word = BOGGLE.selected.map(i => BOGGLE.grid[i]).join('').toLowerCase();
+
+  if (BOGGLE_WORDS.has(word) && !BOGGLE.foundWords.has(word)) {
+    BOGGLE.foundWords.add(word);
+    const points = boggleWordScore(word.length);
+    BOGGLE.score += points;
+
+    BOGGLE.selected.forEach(idx => {
+      document.querySelector(`[data-idx="${idx}"]`).classList.add('found');
+      setTimeout(() => {
+        document.querySelector(`[data-idx="${idx}"]`).classList.remove('found');
+      }, 300);
+    });
+
+    showToast(`✅ "${word.toUpperCase()}" +${points}점`);
+    updateBoggleUI();
+  }
+}
+
+function boggleWordScore(len) {
+  if (len === 3) return 1;
+  if (len === 4) return 2;
+  if (len === 5) return 4;
+  if (len === 6) return 6;
+  return 10;
+}
+
+function updateBoggleUI() {
+  document.getElementById('boggle-score').textContent = BOGGLE.score;
+  document.getElementById('boggle-word-count').textContent = BOGGLE.foundWords.size;
+
+  const current = BOGGLE.selected.map(i => BOGGLE.grid[i]).join('');
+  document.getElementById('boggle-current').textContent = current || '단어를 드래그하세요';
+
+  document.querySelectorAll('.boggle-cell').forEach((cell, idx) => {
+    if (BOGGLE.selected.includes(idx)) {
+      cell.classList.add('selected');
+    } else {
+      cell.classList.remove('selected');
+    }
+  });
+
+  let foundHtml = '';
+  BOGGLE.foundWords.forEach(word => {
+    foundHtml += `<div class="boggle-found-word">${word.toUpperCase()}</div>`;
+  });
+  document.getElementById('boggle-found-words').innerHTML = foundHtml;
+}
+
+function startBoggleTimer() {
+  if (BOGGLE.timerID) clearInterval(BOGGLE.timerID);
+
+  BOGGLE.timerID = setInterval(() => {
+    BOGGLE.timeLeft--;
+    updateBoggleTimer();
+
+    if (BOGGLE.timeLeft <= 0) {
+      clearInterval(BOGGLE.timerID);
+      boggleEnd();
+    }
+  }, 1000);
+}
+
+function updateBoggleTimer() {
+  const min = Math.floor(BOGGLE.timeLeft / 60);
+  const sec = BOGGLE.timeLeft % 60;
+  document.getElementById('boggle-timer').textContent = `${min}:${sec.toString().padStart(2, '0')}`;
+}
+
+function boggleEnd() {
+  BOGGLE.running = false;
+  if (BOGGLE.timerID) clearInterval(BOGGLE.timerID);
+
+  document.getElementById('boggle-result-score').textContent = BOGGLE.score + '점';
+  document.getElementById('boggle-result-sub').textContent = `단어 ${BOGGLE.foundWords.size}개 발견`;
+
+  saveGameBest('boggle', BOGGLE.score);
+  showGameResult('boggle');
+}
+
+// closeGame에 boggle 케이스 추가
+const originalCloseGame = window.closeGame;
+window.closeGame = function(id) {
+  if (id === 'boggle' && BOGGLE.timerID) {
+    clearInterval(BOGGLE.timerID);
+    BOGGLE.running = false;
+  }
+  originalCloseGame.call(this, id);
+};
+
 // 초기화 (DOM 준비 시)
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {
