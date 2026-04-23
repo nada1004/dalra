@@ -6280,10 +6280,12 @@ function soopVoteRender() {
 
 // 카테고리 매핑
 const CAT_MAP = {
-  '📖국어': 'korean',
-  '🔢수학': 'math',
-  '🏛역사': 'history',
-  '🔬과학': 'science'
+  '✏️국어': 'korean',
+  '📐수학': 'math',
+  '📜역사': 'history',
+  '🔬과학': 'science',
+  '🗺️사회': 'social',
+  '🔤영어': 'english'
 };
 
 // OX 데이터 → QDB 포맷 변환
@@ -6363,8 +6365,8 @@ function renderBoard() {
     return;
   }
 
-  const catEmoji = { 'korean': '📖', 'math': '🔢', 'history': '🏛', 'science': '🔬', 'sports': '⚽', 'kpop': '🎤', 'general': '🧠', 'nonsense': '😂' };
-  const catLabel = { 'korean': '국어', 'math': '수학', 'history': '역사', 'science': '과학', 'sports': '스포츠', 'kpop': '연예', 'general': '상식', 'nonsense': '넌센스' };
+  const catEmoji = { 'korean': '✏️', 'math': '📐', 'history': '📜', 'science': '🔬', 'social': '🗺️', 'english': '🔤' };
+  const catLabel = { 'korean': '국어', 'math': '수학', 'history': '역사', 'science': '과학', 'social': '사회', 'english': '영어' };
 
   const startIdx = QZ.pageIdx * QZ.cardsPerPage;
   const endIdx = Math.min(startIdx + QZ.cardsPerPage, QZ.pool.length);
